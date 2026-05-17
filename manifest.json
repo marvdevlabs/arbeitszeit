@@ -9,7 +9,7 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#F2F3F5",
-  "theme_color": "#EC0016",
+  "theme_color": "#2D3142",
   "icons": [
     {
       "src": "/arbeitszeit/icon.svg",
