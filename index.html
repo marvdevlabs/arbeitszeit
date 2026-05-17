@@ -786,14 +786,6 @@
     align-items: center;
     justify-content: center;
   }
-  .spruch-attribution {
-    margin-top: 20px;
-    font-size: 11px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 700;
-  }
   body[data-theme="dark"] .spruch-quote-glyph { opacity: 0.14; }
   .modal-title {
     font-size: 18px; font-weight: 700;
@@ -1475,7 +1467,6 @@
     <div class="modal-title spruch-title">Bahn-Wisdom</div>
     <div class="modal-body spruch-body">
       <p class="spruch-text" id="spruchText">—</p>
-      <div class="spruch-attribution">— Deutsche Bahn</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="showRandomSpruch()">Neuer Spruch</button>
@@ -1498,7 +1489,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.10.2';
+  const APP_VERSION = '1.10.3';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
