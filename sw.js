@@ -8,13 +8,14 @@
  * Install ist nicht-blockierend: schlägt cache.addAll fehl
  * (z.B. einzelne Datei 404), wird der SW trotzdem aktiv.
  */
-const CACHE_NAME = 'arbeitszeit-v1.12.1';
+const CACHE_NAME = 'arbeitszeit-v1.12.2';
 const ASSETS = [
   '/arbeitszeit/',
   '/arbeitszeit/index.html',
   '/arbeitszeit/manifest.json',
   '/arbeitszeit/icon.svg',
-  '/arbeitszeit/docs/images/seriously.jpg'
+  '/arbeitszeit/docs/images/seriously.jpg',
+  '/arbeitszeit/docs/images/seriously-may4.jpg'
 ];
 
 self.addEventListener('install', (event) => {

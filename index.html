@@ -1560,7 +1560,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.12.1';
+  const APP_VERSION = '1.12.2';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2069,9 +2069,14 @@
   function showOcrNotMona() {
     const body = document.getElementById('ocrBody');
     const actions = document.getElementById('ocrActions');
+    // Am 4. Mai (Star Wars Day) Jedi-Schaffner-Variante
+    const today = new Date();
+    const isMay4 = (today.getMonth() === 4 && today.getDate() === 4);
+    const imgSrc = isMay4 ? 'docs/images/seriously-may4.jpg' : 'docs/images/seriously.jpg';
+    const altText = isMay4 ? 'Seriously? (Jedi-Edition)' : 'Seriously?';
     body.innerHTML =
       '<div style="text-align:center;margin:4px 0 12px;">' +
-        '<img src="docs/images/seriously.jpg" alt="Seriously?" ' +
+        '<img src="' + imgSrc + '" alt="' + altText + '" ' +
              'style="width:100%;max-width:280px;border-radius:10px;display:block;margin:0 auto;box-shadow:0 4px 14px rgba(0,0,0,0.18);">' +
       '</div>' +
       '<p style="text-align:center;font-weight:700;font-size:15px;color:var(--text-strong);margin-top:6px;">Das war kein MONAmC-Screenshot.</p>' +
