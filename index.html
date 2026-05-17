@@ -859,6 +859,15 @@
   }
   .app-footer a:hover { color: var(--db-red); }
   .app-footer .sep { margin: 0 6px; opacity: 0.5; }
+  .app-footer #appVersion {
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .app-footer #appVersion:hover { color: var(--db-red); }
+  .app-footer #appVersion:active { transform: scale(0.96); }
 
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -1249,8 +1258,21 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalSpruch">
+  <div class="modal-card">
+    <div class="modal-title">Bahn-Wisdom</div>
+    <div class="modal-body">
+      <p id="spruchText" style="font-size:15px;line-height:1.6;font-style:italic;color:var(--text-main);">—</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="showRandomSpruch()">Nochmal</button>
+      <button class="btn" onclick="closeSpruchModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <div class="app-footer">
-  <span id="appVersion">v–</span>
+  <span id="appVersion" onclick="onVersionClick()" title="" role="button">v–</span>
   <span class="sep">·</span>
   <a href="https://github.com/marvdevlabs/DB-Arbeitszeit" target="_blank" rel="noopener">@marvdevlabs</a>
 </div>
@@ -1258,7 +1280,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.5.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1641,6 +1663,51 @@
         () => fallbackCopy(text)
       );
     } else { fallbackCopy(text); }
+  }
+
+  /* ===== Bahn-Wisdom (Version-Tap × 3) ===== */
+  const BAHN_SPRUCHE = [
+    'Verspätung? Wir nennen das jetzt „flexible Ankunft".',
+    'Schichtdienst-Wahrheit: Der nächste Halt heißt Kaffee.',
+    'Wir entschuldigen uns für die Pünktlichkeit. Passiert uns selten.',
+    'Heute kein Schienenersatzverkehr. Heute das Original.',
+    'Pause steht nicht im Fahrplan. Aber im Tarifvertrag.',
+    'Stell dir vor, es ist Streik und keiner kriegt\'s mit.',
+    'Schichtleiter: „Du machst das schon." Du: „Bin ja schon hier."',
+    'Bordbistro-Brötchen: 8 €. Schichtmoral: unbezahlbar.',
+    'Wenn du das liest, hast du wahrscheinlich Pause. Genieß sie.',
+    'WLAN geht, Türen gehen, Klima geht. Heute ist alles möglich.',
+    'Der Zug kommt. Irgendwann. Sicher.',
+    'Verspätung über 60 Min? Schicht zum Abenteuer erklären.',
+    'Pünktlichkeitsquote heute: ja, irgendwie.',
+    'Auf den Schienen klappt\'s, weil wir\'s machen. Punkt.',
+    'Frühschicht ist ein Naturgesetz, kein Lifestyle.',
+    'Espresso oder Schwarztee — mehr Entscheidung braucht man heute nicht.',
+    'Schichtwechsel ist wie Staffelübergabe. Nur ohne Stab.',
+    'Reisende beschweren sich. Wir lösen Probleme. Reihenfolge egal.',
+    'Heute schon \'ne Durchsage gemacht, die keiner verstanden hat? Klassiker.',
+    'Schichtende ist auch nur ein Wort. Aber ein schönes.'
+  ];
+
+  let versionClickCount = 0;
+  let versionClickTimer = null;
+  function onVersionClick() {
+    versionClickCount++;
+    clearTimeout(versionClickTimer);
+    if (versionClickCount >= 3) {
+      versionClickCount = 0;
+      showRandomSpruch();
+    } else {
+      versionClickTimer = setTimeout(() => versionClickCount = 0, 1500);
+    }
+  }
+  function showRandomSpruch() {
+    const spruch = BAHN_SPRUCHE[Math.floor(Math.random() * BAHN_SPRUCHE.length)];
+    document.getElementById('spruchText').textContent = spruch;
+    document.getElementById('modalSpruch').classList.remove('hidden');
+  }
+  function closeSpruchModal() {
+    document.getElementById('modalSpruch').classList.add('hidden');
   }
 
   /* ===== May the 4th Easter Egg ===== */
