@@ -159,48 +159,51 @@
   .step-indicator .dot.done { background: rgba(255,255,255,0.85); }
   .step-indicator .dot.current { width: 18px; background: #fff; }
 
-  .bundesland-select {
-    background-color: rgba(0,0,0,0.22);
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23fff' d='M5 6 0 0h10z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 11px center;
-    background-size: 9px;
-    color: #fff;
-    border: none;
-    height: 32px;
-    padding: 0 28px 0 14px;
-    border-radius: 100px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    cursor: pointer;
+  select.form-select {
+    width: 100%;
+    padding: 10px 36px 10px 13px;
+    border: 1.5px solid var(--border-input);
+    border-radius: 8px;
+    font-size: 14px;
     font-family: inherit;
+    background-color: var(--bg-input);
+    color: var(--text-main);
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: background-color 0.15s, box-shadow 0.15s;
-    max-width: 200px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%235F6168' d='M5 6 0 0h10z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.2s;
   }
-  .bundesland-select:hover { background-color: rgba(0,0,0,0.35); }
-  .bundesland-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(255,255,255,0.30); }
-  .bundesland-select.unset {
-    background-color: rgba(255, 184, 77, 0.55);
-    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.5);
-    animation: pulseUnset 2.2s ease-in-out infinite;
+  select.form-select:focus { outline: none; border-color: var(--db-red); box-shadow: 0 0 0 3px rgba(236,0,22,0.14); }
+  body[data-theme="dark"] select.form-select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23A8AAB0' d='M5 6 0 0h10z'/></svg>");
   }
-  .bundesland-select option { background: #2A2B2F; color: #fff; font-weight: 600; }
-  @keyframes pulseUnset {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.4); }
-    50%      { box-shadow: 0 0 0 6px rgba(255, 184, 77, 0); }
+  body[data-theme="dark"] select.form-select:focus { box-shadow: 0 0 0 3px rgba(236,0,22,0.30); }
+
+  .header-bundesland {
+    background: rgba(0,0,0,0.22); color: #fff; border: none;
+    height: 32px; padding: 0 14px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.15s, transform 0.08s;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
-  @media (max-width: 520px) {
-    .bundesland-select { max-width: 145px; padding: 0 24px 0 11px; font-size: 11.5px; }
+  .header-bundesland:hover { background: rgba(0,0,0,0.35); }
+  .header-bundesland:active { transform: scale(0.96); }
+  .header-bundesland::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.75);
+    flex-shrink: 0;
   }
+  .header-bundesland.hidden { display: none; }
 
   .form-row-pair {
     display: grid;
@@ -266,7 +269,7 @@
 
   .form-row { margin-bottom: 12px; }
   label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--text-strong); font-size: 13px; }
-  input[type="number"], input[type="time"], input[type="text"] {
+  input[type="number"], input[type="time"], input[type="text"], input[type="date"] {
     width: 100%;
     padding: 10px 13px;
     border: 1.5px solid var(--border-input);
@@ -277,9 +280,11 @@
     color: var(--text-main);
     transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
   }
+  input[type="date"], input[type="time"] { font-variant-numeric: tabular-nums; }
   input:focus { outline: none; border-color: var(--db-red); box-shadow: 0 0 0 3px rgba(236,0,22,0.14); }
   body[data-theme="dark"] input:focus { box-shadow: 0 0 0 3px rgba(236,0,22,0.30); }
   body[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+  body[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
   body[data-theme="dark"] input[type="number"]::-webkit-inner-spin-button { filter: invert(0.9); }
 
   .btn {
@@ -756,7 +761,7 @@
     .step-indicator, .theme-toggle, .restored-banner, .pausen-hinweis { display: none !important; }
 
     .info-box, .button-row,
-    #step1, #step2, #step3,
+    #step1, #step2, #step3, #step4,
     .switch, .minutes-display,
     .toast { display: none !important; }
 
@@ -856,15 +861,16 @@
       <div class="sub">1 AE = 10 Minuten · Soll 7:48h Arbeitszeit (ohne Anfahrt/Abfahrt/Pause)</div>
     </div>
     <div class="header-right">
-      <select class="bundesland-select unset" id="bundeslandSelect" onchange="onBundeslandChange(this.value)" title="Bundesland wählen" aria-label="Bundesland wählen">
-        <option value="" disabled selected>Bundesland …</option>
-      </select>
+      <button class="header-bundesland hidden" id="headerBundesland" onclick="showStep(1)" title="Bundesland ändern" aria-label="Bundesland ändern">
+        <span id="headerBundeslandLabel">—</span>
+      </button>
       <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Theme wechseln" aria-label="Theme wechseln">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
       </button>
-      <div class="step-indicator" id="step-indicator" aria-label="Schritt 1 von 4">
+      <div class="step-indicator" id="step-indicator" aria-label="Schritt 1 von 5">
         <span class="dot current"></span>
+        <span class="dot"></span>
         <span class="dot"></span>
         <span class="dot"></span>
         <span class="dot"></span>
@@ -877,8 +883,24 @@
     <button onclick="resetAll()">Neuer Tag starten →</button>
   </div>
 
-  <!-- Step 1 -->
+  <!-- Step 1: Bundesland -->
   <div class="step" id="step1">
+    <h2>In welchem Bundesland arbeitest du?</h2>
+    <div class="info-box">Für die Berechnung der gesetzlichen Feiertage in deinem Bundesland. Bei Bereitschaft an Wochenenden oder Feiertagen entfällt der An-/Abfahrt-Abzug.</div>
+    <div class="form-row">
+      <label for="bundeslandSelect">Bundesland</label>
+      <select class="form-select" id="bundeslandSelect" onchange="onBundeslandChange(this.value)">
+        <option value="" disabled selected>Bundesland wählen …</option>
+      </select>
+    </div>
+    <div class="button-row">
+      <div class="left"></div>
+      <div class="right"><button class="btn" onclick="goToStep2()">Weiter →</button></div>
+    </div>
+  </div>
+
+  <!-- Step 2: Bereitschaft -->
+  <div class="step hidden" id="step2">
     <h2>Hast du heute Bereitschaft?</h2>
     <div class="info-box">Bei Bereitschaft startet der Tag um 09:00 Uhr, sonst um 06:30 Uhr. Du kannst die Zeit im nächsten Schritt noch anpassen.</div>
     <div class="choice-row">
@@ -889,10 +911,14 @@
         Ja <small>Start 09:00</small>
       </button>
     </div>
+    <div class="button-row">
+      <div class="left"><button class="btn btn-secondary" onclick="showStep(1)">← Zurück</button></div>
+      <div class="right"></div>
+    </div>
   </div>
 
-  <!-- Step 2 -->
-  <div class="step hidden" id="step2">
+  <!-- Step 3: Datum, Startzeit, Aufträge -->
+  <div class="step hidden" id="step3">
     <h2>Datum, Startzeit & Aufträge</h2>
     <div class="form-row-pair">
       <div class="form-row">
@@ -910,13 +936,13 @@
       <input type="number" id="anzahl" min="1" max="50" value="3" inputmode="numeric" pattern="[0-9]*">
     </div>
     <div class="button-row">
-      <div class="left"><button class="btn btn-secondary" onclick="showStep(1)">← Zurück</button></div>
-      <div class="right"><button class="btn" onclick="goToStep3()">Weiter →</button></div>
+      <div class="left"><button class="btn btn-secondary" onclick="showStep(2)">← Zurück</button></div>
+      <div class="right"><button class="btn" onclick="goToStep4()">Weiter →</button></div>
     </div>
   </div>
 
-  <!-- Step 3 -->
-  <div class="step hidden" id="step3">
+  <!-- Step 4: SAP -->
+  <div class="step hidden" id="step4">
     <h2>Auftragsnummern & Splits</h2>
     <div class="info-box">
       <strong>SAP-Nummer</strong> pro Auftrag eintragen, ggf. <strong>Splits</strong> wählen.
@@ -924,13 +950,13 @@
     </div>
     <div id="sap-container"></div>
     <div class="button-row">
-      <div class="left"><button class="btn btn-secondary" onclick="showStep(2)">← Zurück</button></div>
-      <div class="right"><button class="btn" onclick="goToStep4()">Weiter →</button></div>
+      <div class="left"><button class="btn btn-secondary" onclick="showStep(3)">← Zurück</button></div>
+      <div class="right"><button class="btn" onclick="goToStep5()">Weiter →</button></div>
     </div>
   </div>
 
-  <!-- Step 4 -->
-  <div class="step hidden" id="step4">
+  <!-- Step 5: Auftrags-Details -->
+  <div class="step hidden" id="step5">
     <div class="info-box">
       <strong>Namen anpassen:</strong> Auftrags-Titel anklicken.
       <strong>Reise/Rückzeit:</strong> über Schalter aktivieren.
@@ -945,7 +971,7 @@
     <h3 class="section">Protokoll für Rückmeldung</h3>
     <div class="protokoll" id="protokoll"></div>
     <div class="button-row">
-      <div class="left"><button class="btn btn-secondary" onclick="showStep(3)">← Zurück</button></div>
+      <div class="left"><button class="btn btn-secondary" onclick="showStep(4)">← Zurück</button></div>
       <div class="right">
         <button class="btn btn-outline" onclick="copyProtokoll()">Kopieren</button>
         <button class="btn btn-outline" onclick="sendEmail()">Per E-Mail</button>
@@ -1149,7 +1175,7 @@
       if (Array.isArray(d.sapNumbers)) state.sapNumbers = d.sapNumbers;
       if (Array.isArray(d.auftraege)) state.auftraege = d.auftraege;
       if (typeof d.tenHourAck === 'boolean') state.tenHourAck = d.tenHourAck;
-      return (d.currentStep >= 1 && d.currentStep <= 4) ? d.currentStep : 1;
+      return (d.currentStep >= 1 && d.currentStep <= 5) ? d.currentStep : 1;
     } catch (e) { return null; }
   }
   function resetAll() {
@@ -1207,11 +1233,11 @@
   /* ===== Step Navigation ===== */
   function showStep(n) {
     currentStep = n;
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       document.getElementById('step' + i).classList.toggle('hidden', i !== n);
     }
     const indicator = document.getElementById('step-indicator');
-    indicator.setAttribute('aria-label', 'Schritt ' + n + ' von 4');
+    indicator.setAttribute('aria-label', 'Schritt ' + n + ' von 5');
     const dots = indicator.querySelectorAll('.dot');
     dots.forEach((d, idx) => {
       const step = idx + 1;
@@ -1220,49 +1246,58 @@
     });
     if (n === 1) refreshStep1();
     if (n === 2) refreshStep2();
-    if (n === 3) renderSapInputs();
-    if (n === 4) renderAuftraege();
+    if (n === 3) refreshStep3();
+    if (n === 4) renderSapInputs();
+    if (n === 5) renderAuftraege();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     saveState();
   }
   function refreshStep1() {
+    const sel = document.getElementById('bundeslandSelect');
+    if (sel) sel.value = state.bundesland || '';
+  }
+  function refreshStep2() {
     document.getElementById('btn-nein').classList.toggle('active', state.bereitschaft === false);
     document.getElementById('btn-ja').classList.toggle('active', state.bereitschaft === true);
   }
-  function refreshStep2() {
+  function refreshStep3() {
     document.getElementById('anzahl').value = state.anzahl;
     document.getElementById('startzeit').value = state.startzeit;
     document.getElementById('datum').value = state.date;
     updateDateInfo();
   }
 
+  function goToStep2() {
+    if (!state.bundesland) {
+      const sel = document.getElementById('bundeslandSelect');
+      if (sel) sel.focus();
+      alert('Bitte Bundesland wählen.');
+      return;
+    }
+    showStep(2);
+  }
+
   function setBereitschaft(val) {
     const changed = state.bereitschaft !== val;
     state.bereitschaft = val;
     if (changed) state.startzeit = val ? "09:00" : "06:30";
-    showStep(2);
+    showStep(3);
   }
 
-  function goToStep3() {
+  function goToStep4() {
     const anzahl = parseInt(document.getElementById('anzahl').value);
     const startzeit = document.getElementById('startzeit').value;
     const datum = document.getElementById('datum').value;
     if (!datum) { alert('Bitte Datum wählen.'); return; }
     if (!anzahl || anzahl < 1) { alert('Bitte gültige Anzahl eingeben.'); return; }
     if (!startzeit) { alert('Bitte Startzeit eingeben.'); return; }
-    if (!state.bundesland) {
-      const sel = document.getElementById('bundeslandSelect');
-      if (sel) sel.focus();
-      alert('Bitte zuerst Bundesland oben rechts wählen.');
-      return;
-    }
     state.anzahl = anzahl;
     state.startzeit = startzeit;
     state.date = datum;
     while (state.sapNumbers.length < anzahl) state.sapNumbers.push({ sap: '', splits: [] });
     if (state.sapNumbers.length > anzahl) state.sapNumbers.length = anzahl;
     if (state.auftraege.length > anzahl) state.auftraege.length = anzahl;
-    showStep(3);
+    showStep(4);
   }
 
   /* ===== Bundesland & Datum Handler ===== */
@@ -1280,22 +1315,26 @@
     if (!code) return;
     state.bundesland = code;
     updateBundeslandDisplay();
-    if (currentStep === 2) updateDateInfo();
-    if (currentStep === 4) renderAuftraege();
+    if (currentStep === 3) updateDateInfo();
+    if (currentStep === 5) renderAuftraege();
     saveState();
   }
   function updateBundeslandDisplay() {
     const sel = document.getElementById('bundeslandSelect');
-    if (!sel) return;
-    sel.value = state.bundesland || '';
-    sel.classList.toggle('unset', !state.bundesland);
-    const name = state.bundesland ? (BUNDESLAENDER.find(b => b.code === state.bundesland) || {}).name : null;
-    sel.title = name ? 'Bundesland: ' + name : 'Bundesland wählen';
+    if (sel) sel.value = state.bundesland || '';
+    const pill = document.getElementById('headerBundesland');
+    const label = document.getElementById('headerBundeslandLabel');
+    if (pill) {
+      pill.classList.toggle('hidden', !state.bundesland);
+      const name = state.bundesland ? (BUNDESLAENDER.find(b => b.code === state.bundesland) || {}).name : null;
+      pill.title = name ? 'Bundesland: ' + name + ' · klicken zum Ändern' : 'Bundesland ändern';
+    }
+    if (label) label.textContent = state.bundesland || '—';
   }
   function onDatumChange(value) {
     state.date = value || todayISO();
     updateDateInfo();
-    if (currentStep === 4) renderAuftraege();
+    if (currentStep === 5) renderAuftraege();
     saveState();
   }
   function updateDateInfo() {
@@ -1352,7 +1391,7 @@
     state.auftraege = newAuftraege;
   }
 
-  function goToStep4() { syncAuftraegeFromSap(); showStep(4); }
+  function goToStep5() { syncAuftraegeFromSap(); showStep(5); }
 
   function renderSapInputs() {
     const container = document.getElementById('sap-container');
@@ -1730,18 +1769,11 @@
   initBundeslandSelect();
   const restoredStep = loadState();
   updateBundeslandDisplay();
-  if (restoredStep) {
+  if (restoredStep && state.bundesland) {
     document.getElementById('restored-banner').classList.remove('hidden');
     showStep(restoredStep);
   } else {
     showStep(1);
-  }
-  if (!state.bundesland) {
-    setTimeout(() => {
-      showToast('Bitte zuerst Bundesland oben wählen');
-      const sel = document.getElementById('bundeslandSelect');
-      if (sel) sel.focus();
-    }, 350);
   }
 </script>
 </body>
