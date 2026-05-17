@@ -845,6 +845,58 @@
     border: none;
   }
 
+  /* ===== May the 4th Easter Egg ===== */
+  #may4-overlay {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+  #may4-overlay pre {
+    position: absolute;
+    font-family: "JetBrains Mono", "SF Mono", Consolas, "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.05;
+    white-space: pre;
+    margin: 0;
+    user-select: none;
+  }
+  .m4-xwing {
+    color: #FFD54F;
+    text-shadow: 0 0 8px rgba(255,165,0,0.9), 0 0 16px rgba(255,140,0,0.55);
+  }
+  .m4-xwing-1 { top: 14%; animation: m4-xwing-fly 5.5s linear forwards; }
+  .m4-xwing-2 { top: 28%; animation: m4-xwing-fly 6.5s 1.4s linear forwards; }
+  .m4-xwing-3 { top: 42%; animation: m4-xwing-fly 5.0s 3.2s linear forwards; }
+  @keyframes m4-xwing-fly {
+    0%   { left: -160px; transform: rotate(-2deg); }
+    100% { left: calc(100% + 160px); transform: rotate(-2deg); }
+  }
+  .m4-atat {
+    bottom: 6%;
+    color: #B0BEC5;
+    text-shadow: 0 0 6px rgba(255,255,255,0.55);
+    font-size: 13px;
+    transform-origin: bottom center;
+  }
+  .m4-atat-1 { animation: m4-atat-walk 13s linear forwards; }
+  .m4-atat-2 { animation: m4-atat-trip 14s 0.5s linear forwards; }
+  @keyframes m4-atat-walk {
+    0%   { left: -140px; }
+    100% { left: calc(100% + 140px); }
+  }
+  @keyframes m4-atat-trip {
+    0%   { left: -140px; transform: rotate(0deg); opacity: 1; }
+    55%  { left: 55%;    transform: rotate(0deg); opacity: 1; }
+    62%  { transform: rotate(-12deg); }
+    72%  { transform: rotate(-38deg); }
+    82%  { transform: rotate(-65deg); }
+    92%  { transform: rotate(-88deg); opacity: 1; }
+    100% { left: 55%;    transform: rotate(-92deg); opacity: 0.45; }
+  }
+  body[data-theme="dark"] .m4-atat { color: #CFD8DC; }
+
   .app-footer {
     text-align: center;
     margin: 16px auto 4px;
@@ -1245,7 +1297,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1432,6 +1484,7 @@
     const keepBundesland = state.bundesland;
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     try { localStorage.removeItem(STORAGE_KEY_LEGACY); } catch (e) {}
+    try { sessionStorage.removeItem('may4-shown'); } catch (e) {}
     state = {
       bundesland: keepBundesland,
       date: todayISO(),
@@ -1629,6 +1682,52 @@
     } else { fallbackCopy(text); }
   }
 
+  /* ===== May the 4th Easter Egg ===== */
+  const XWING_ART =
+    '       /\\|/\\\n' +
+    '==<==(- O -)==>==\n' +
+    '       \\/|\\/';
+  const ATAT_ART =
+    '   .------.\n' +
+    '   | o  o |\n' +
+    ' __|======|__\n' +
+    ' || |    | ||\n' +
+    ' || |    | ||';
+
+  function isMay4(dateISO) {
+    return !!dateISO && dateISO.slice(5, 10) === '05-04';
+  }
+  function ensureMay4Overlay() {
+    if (document.getElementById('may4-overlay')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'may4-overlay';
+    wrap.innerHTML =
+      '<pre class="m4-xwing m4-xwing-1">' + XWING_ART + '</pre>' +
+      '<pre class="m4-xwing m4-xwing-2">' + XWING_ART + '</pre>' +
+      '<pre class="m4-xwing m4-xwing-3">' + XWING_ART + '</pre>' +
+      '<pre class="m4-atat m4-atat-1">' + ATAT_ART + '</pre>' +
+      '<pre class="m4-atat m4-atat-2">' + ATAT_ART + '</pre>';
+    document.body.appendChild(wrap);
+  }
+  function maybeMay4Easter() {
+    if (!isMay4(state.date)) return;
+    try { if (sessionStorage.getItem('may4-shown') === '1') return; } catch (e) {}
+    try { sessionStorage.setItem('may4-shown', '1'); } catch (e) {}
+    showToast('May the 4th be with you ✨');
+    ensureMay4Overlay();
+    const overlay = document.getElementById('may4-overlay');
+    // Restart-Animations falls bereits vorhanden
+    overlay.querySelectorAll('pre').forEach(el => {
+      const original = el.style.animation;
+      el.style.animation = 'none';
+      void el.offsetHeight;
+      el.style.animation = '';
+    });
+    setTimeout(() => {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 16000);
+  }
+
   /* ===== Info-Tooltips ===== */
   function toggleInfo(el, ev) {
     if (ev) ev.stopPropagation();
@@ -1701,6 +1800,7 @@
     if (n === 5) renderAuftraege();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     saveState();
+    maybeMay4Easter();
   }
   function refreshStep1() {
     const sel = document.getElementById('bundeslandSelect');
@@ -1786,6 +1886,7 @@
     updateDateInfo();
     if (currentStep === 5) renderAuftraege();
     saveState();
+    maybeMay4Easter();
   }
   function updateDateInfo() {
     const info = document.getElementById('date-info');
