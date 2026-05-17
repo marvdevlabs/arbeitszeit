@@ -2,7 +2,7 @@
 
 Single-File-Webapp zum täglichen Erfassen der Arbeitszeit in **AE (Arbeitseinheiten, 1 AE = 10 min)**. Mobile-first, offline-fähig, keine Server-Komponente — alle Daten bleiben im Browser.
 
-**Version:** 1.11.4 · **Live:** [marvdevlabs.github.io/arbeitszeit](https://marvdevlabs.github.io/arbeitszeit/)
+**Version:** 1.11.5 · **Live:** [marvdevlabs.github.io/arbeitszeit](https://marvdevlabs.github.io/arbeitszeit/)
 
 <p align="center">
   <img src="docs/screenshots/06-step5-full.png" alt="Arbeitszeit-Rechner – Komplette Übersicht in Step 5" width="380">
