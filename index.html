@@ -704,6 +704,59 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* ===== Screenshot-Import (OCR) ===== */
+  .ocr-import-btn { width: 100%; margin-top: 8px; }
+  .ocr-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(0,0,0,0.10);
+    border-top-color: var(--db-red);
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: ocr-spin 0.8s linear infinite;
+  }
+  body[data-theme="dark"] .ocr-spinner { border-color: rgba(255,255,255,0.10); border-top-color: var(--db-red); }
+  @keyframes ocr-spin { to { transform: rotate(360deg); } }
+  .ocr-privacy-note {
+    background: rgba(76, 175, 80, 0.08);
+    border: 1px solid rgba(76, 175, 80, 0.28);
+    border-radius: 8px;
+    padding: 11px 14px;
+    margin: 14px 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+  .ocr-privacy-note strong { color: #2e7d32; }
+  body[data-theme="dark"] .ocr-privacy-note {
+    background: rgba(76, 175, 80, 0.10);
+    border-color: rgba(76, 175, 80, 0.30);
+  }
+  body[data-theme="dark"] .ocr-privacy-note strong { color: #81c784; }
+  .ocr-result-list { max-height: 40vh; overflow-y: auto; margin: 12px 0; padding-right: 2px; }
+  .ocr-result-item {
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--db-red);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ocr-result-item strong { font-weight: 700; color: var(--text-strong); }
+  .ocr-result-item .splits { color: var(--text-muted); font-size: 12px; }
+  .ocr-discard-note {
+    text-align: center;
+    color: #2e7d32;
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  body[data-theme="dark"] .ocr-discard-note { color: #81c784; }
+
   /* ===== Über-Modal ===== */
   .modal-about-card .modal-body {
     max-height: 60vh;
@@ -1279,6 +1332,7 @@
       <label for="anzahl">Aufträge heute</label>
       <input type="number" id="anzahl" min="1" max="50" value="3" inputmode="numeric" pattern="[0-9]*">
     </div>
+    <button class="btn btn-outline ocr-import-btn" onclick="openOcrModal()">Aus Screenshot importieren</button>
     <div class="button-row">
       <div class="left"><button class="btn btn-secondary" onclick="showStep(2)">← Zurück</button></div>
       <div class="right"><button class="btn" onclick="goToStep4()">Weiter →</button></div>
@@ -1428,6 +1482,14 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalOcr">
+  <div class="modal-card">
+    <div class="modal-title">Aus Screenshot importieren</div>
+    <div class="modal-body" id="ocrBody"></div>
+    <div class="modal-actions" id="ocrActions"></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalAbout">
   <div class="modal-card modal-about-card">
     <div class="modal-title">Über</div>
@@ -1498,7 +1560,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.11.9';
+  const APP_VERSION = '1.12.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1880,6 +1942,160 @@
         () => fallbackCopy(text)
       );
     } else { fallbackCopy(text); }
+  }
+
+  /* ===== Screenshot-Import (OCR via Tesseract.js) ===== */
+  let _tesseractLoading = null;
+  let _pendingOcrOrders = null;
+
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (_tesseractLoading) return _tesseractLoading;
+    _tesseractLoading = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      script.onload = () => resolve(window.Tesseract);
+      script.onerror = () => {
+        _tesseractLoading = null;
+        reject(new Error('Tesseract.js konnte nicht geladen werden. Bist du offline?'));
+      };
+      document.head.appendChild(script);
+    });
+    return _tesseractLoading;
+  }
+
+  function openOcrModal() {
+    resetOcrModal();
+    document.getElementById('modalOcr').classList.remove('hidden');
+  }
+
+  function closeOcrModal() {
+    document.getElementById('modalOcr').classList.add('hidden');
+    _pendingOcrOrders = null;
+  }
+
+  function resetOcrModal() {
+    _pendingOcrOrders = null;
+    document.getElementById('ocrBody').innerHTML =
+      '<p>Lade einen Screenshot aus deiner Auftragsliste (z.B. MONAmC). Die App erkennt automatisch SAP-Nummern und Splits.</p>' +
+      '<div class="ocr-privacy-note">🔒 <strong>Privatsphäre:</strong> Das Bild wird ausschließlich lokal in deinem Browser analysiert. Es wird nicht gespeichert, nicht hochgeladen und nicht übertragen. Nach der Erkennung ist es weg.</div>' +
+      '<input type="file" id="ocrFile" accept="image/*" style="display: none" onchange="handleOcrFile(this.files[0]); this.value=\'\'">' +
+      '<button class="btn" style="width: 100%; margin-top: 6px;" onclick="document.getElementById(\'ocrFile\').click()">Bild wählen</button>';
+    document.getElementById('ocrActions').innerHTML =
+      '<button class="btn btn-secondary" onclick="closeOcrModal()">Abbrechen</button>';
+  }
+
+  function handleOcrFile(file) {
+    if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) {
+      showToast('Bitte ein Bild auswählen');
+      return;
+    }
+    document.getElementById('ocrBody').innerHTML =
+      '<p style="text-align:center;margin-bottom:14px;">Erkennung läuft …</p>' +
+      '<div class="ocr-spinner"></div>' +
+      '<p id="ocrProgress" style="text-align:center;font-size:12.5px;color:var(--text-muted);margin-top:16px;">Tesseract wird geladen …</p>' +
+      '<p style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:12px;">🔒 Bild wird nur lokal verarbeitet, nicht gespeichert</p>';
+    document.getElementById('ocrActions').innerHTML =
+      '<button class="btn btn-secondary" onclick="closeOcrModal()">Abbrechen</button>';
+    runOcr(file);
+  }
+
+  async function runOcr(file) {
+    let blob = file;
+    try {
+      const Tesseract = await loadTesseract();
+      const progressEl = document.getElementById('ocrProgress');
+      if (progressEl) progressEl.textContent = 'Bild wird gelesen …';
+      const { data } = await Tesseract.recognize(blob, 'deu', {
+        logger: m => {
+          if (m.status === 'recognizing text' && document.getElementById('ocrProgress')) {
+            document.getElementById('ocrProgress').textContent = 'Erkennung: ' + Math.round(m.progress * 100) + '%';
+          } else if (m.status && document.getElementById('ocrProgress')) {
+            document.getElementById('ocrProgress').textContent = m.status + ' …';
+          }
+        }
+      });
+      blob = null;
+      const orders = parseAuftragsText(data.text);
+      showOcrResult(orders);
+    } catch (err) {
+      blob = null;
+      console.error('OCR failed:', err);
+      document.getElementById('ocrBody').innerHTML =
+        '<p style="color:var(--db-red);">Erkennung fehlgeschlagen.</p>' +
+        '<p style="font-size:12.5px;color:var(--text-muted);">' + (err && err.message ? err.message : 'Unbekannter Fehler.') + '</p>';
+      document.getElementById('ocrActions').innerHTML =
+        '<button class="btn btn-secondary" onclick="closeOcrModal()">Schließen</button>' +
+        '<button class="btn" onclick="resetOcrModal()">Nochmal</button>';
+    }
+  }
+
+  function parseAuftragsText(text) {
+    const lines = (text || '').split('\n');
+    const ordersBySap = new Map();
+    const sapOrder = [];
+    const VALID_SPLITS = new Set([10, 11, 20, 29, 40, 50]);
+    for (const line of lines) {
+      const match = line.match(/(\d{6,12})\s*[\-—–_~]\s*(\d{1,3})\s*[\-—–_~]\s*\d{1,3}/);
+      if (!match) continue;
+      const sap = match[1];
+      const split = parseInt(match[2], 10);
+      if (!VALID_SPLITS.has(split)) continue;
+      if (!ordersBySap.has(sap)) {
+        ordersBySap.set(sap, new Set());
+        sapOrder.push(sap);
+      }
+      ordersBySap.get(sap).add(split);
+    }
+    return sapOrder.map(sap => ({
+      sap,
+      splits: Array.from(ordersBySap.get(sap)).sort((a, b) => a - b)
+    }));
+  }
+
+  function showOcrResult(orders) {
+    const body = document.getElementById('ocrBody');
+    const actions = document.getElementById('ocrActions');
+    if (!orders || orders.length === 0) {
+      body.innerHTML =
+        '<p>Keine Aufträge erkannt.</p>' +
+        '<p style="font-size:12.5px;color:var(--text-muted);">Versuch es mit einem schärferen oder größeren Screenshot.</p>' +
+        '<p class="ocr-discard-note">🔒 Bild wurde verworfen.</p>';
+      actions.innerHTML =
+        '<button class="btn btn-secondary" onclick="closeOcrModal()">Schließen</button>' +
+        '<button class="btn" onclick="resetOcrModal()">Anderes Bild</button>';
+      return;
+    }
+    _pendingOcrOrders = orders;
+    const list = orders.map(o =>
+      '<div class="ocr-result-item"><strong>' + escapeHtml(o.sap) + '</strong>' +
+      (o.splits.length > 0 ? '<span class="splits">Splits: ' + o.splits.join(', ') + '</span>' : '<span class="splits">(keine Splits)</span>') +
+      '</div>'
+    ).join('');
+    body.innerHTML =
+      '<p><strong>' + orders.length + ' Auftrag' + (orders.length === 1 ? '' : 'e') + '</strong> erkannt:</p>' +
+      '<div class="ocr-result-list">' + list + '</div>' +
+      '<p style="font-size:12.5px;color:var(--text-muted);">⚠ Übernehmen ersetzt die bisherige Anzahl und alle SAP-/Split-Eingaben.</p>' +
+      '<p class="ocr-discard-note">🔒 Bild wurde bereits verworfen.</p>';
+    actions.innerHTML =
+      '<button class="btn btn-secondary" onclick="closeOcrModal()">Abbrechen</button>' +
+      '<button class="btn" onclick="applyPendingOrders()">Übernehmen</button>';
+  }
+
+  function applyPendingOrders() {
+    if (!_pendingOcrOrders) return;
+    const orders = _pendingOcrOrders;
+    state.anzahl = orders.length;
+    state.sapNumbers = orders.map(o => ({
+      sap: o.sap,
+      splits: Array.isArray(o.splits) ? [...o.splits] : []
+    }));
+    if (state.auftraege.length > orders.length) state.auftraege.length = orders.length;
+    closeOcrModal();
+    saveState();
+    goToStep5();
+    showToast(orders.length + ' Auftrag' + (orders.length === 1 ? '' : 'e') + ' importiert');
   }
 
   /* ===== Über-Modal ===== */
