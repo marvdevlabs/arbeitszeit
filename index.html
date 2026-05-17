@@ -309,29 +309,6 @@
   .summary-badge.holiday { background: rgba(255, 184, 77, 0.32); }
   .summary-badge.weekend { background: rgba(255, 184, 77, 0.24); }
 
-  .restored-banner {
-    background: var(--info-bg);
-    color: var(--info-text);
-    border-left: 3px solid var(--db-red);
-    padding: 8px 12px;
-    margin: 12px 20px 0;
-    border-radius: 4px;
-    font-size: 12.5px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; flex-wrap: wrap;
-  }
-  .restored-banner.hidden { display: none; }
-  .restored-banner button {
-    background: transparent;
-    color: var(--db-red);
-    border: 1.5px solid var(--db-red);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-  }
-  .restored-banner button:hover { background: var(--db-red); color: #fff; }
-
   .step { padding: 16px 20px; }
   .step.hidden { display: none; }
   .step h2 { font-size: 16px; margin-bottom: 12px; color: var(--text-strong); }
@@ -1051,7 +1028,6 @@
       margin-top: 6px;
       border-top: 1px solid rgba(255,255,255,0.16);
     }
-    .restored-banner { margin: 12px 16px 0; }
   }
   @media (max-width: 520px) {
     body { --pad: 4px; }
@@ -1062,7 +1038,6 @@
     .theme-toggle, .step-indicator { font-size: 11px; padding: 3px 8px; }
     .step { padding: 12px 14px; }
     .info-box { font-size: 12px; padding: 9px 12px; }
-    .restored-banner { margin: 8px 14px 0; font-size: 12px; }
     .auftrag-card { padding: 10px 12px; }
     .auftrag-header { flex-wrap: wrap; gap: 6px; }
     .auftrag-name { font-size: 13px; }
@@ -1100,7 +1075,7 @@
     header * { color: #fff !important; }
     header h1 { font-size: 13pt; }
     header .sub { font-size: 8pt; }
-    .step-indicator, .theme-toggle, .restored-banner, .pausen-hinweis { display: none !important; }
+    .step-indicator, .theme-toggle, .pausen-hinweis { display: none !important; }
 
     .info-box, .button-row,
     #step1, #step2, #step3, #step4,
@@ -1226,11 +1201,6 @@
       </div>
     </div>
   </header>
-
-  <div class="restored-banner hidden" id="restored-banner">
-    <span>Daten vom letzten Mal wiederhergestellt.</span>
-    <button onclick="openResetModal()">Neuer Tag starten →</button>
-  </div>
 
   <!-- Step 1: Bundesland -->
   <div class="step" id="step1">
@@ -1419,6 +1389,20 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalRestore">
+  <div class="modal-card">
+    <div class="modal-title">Daten vom letzten Mal gefunden</div>
+    <div class="modal-body">
+      <p>Vom letzten Öffnen sind noch Eingaben vorhanden (<strong id="restoreDate">—</strong>).</p>
+      <p>Möchtest du dort <strong>weiterarbeiten</strong> oder den Tag <strong>in den Verlauf archivieren</strong> und einen neuen starten?</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="restoreArchive()">In Verlauf archivieren</button>
+      <button class="btn" onclick="restoreContinue()">Weiterarbeiten</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalAbout">
   <div class="modal-card modal-about-card">
     <div class="modal-title">Über</div>
@@ -1489,7 +1473,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.10.4';
+  const APP_VERSION = '1.11.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1687,7 +1671,6 @@
     document.getElementById('startzeit').value = "06:30";
     const dEl = document.getElementById('datum');
     if (dEl) dEl.value = state.date;
-    document.getElementById('restored-banner').classList.add('hidden');
     document.getElementById('modal10h').classList.add('hidden');
     saveState();
     showStep(state.bundesland ? 2 : 1);
@@ -2710,18 +2693,40 @@
     });
   }
 
+  /* ===== Restore-Modal beim Start ===== */
+  let pendingRestoreStep = null;
+  function showRestoreModal(savedStep) {
+    pendingRestoreStep = savedStep;
+    const dateLabel = state.date
+      ? (WEEKDAYS_LONG[parseLocalDate(state.date).getDay()] + ', ' + formatDateDE(state.date))
+      : '—';
+    document.getElementById('restoreDate').textContent = dateLabel;
+    document.getElementById('modalRestore').classList.remove('hidden');
+  }
+  function restoreContinue() {
+    document.getElementById('modalRestore').classList.add('hidden');
+    const step = pendingRestoreStep;
+    pendingRestoreStep = null;
+    if (step) showStep(step);
+  }
+  function restoreArchive() {
+    document.getElementById('modalRestore').classList.add('hidden');
+    pendingRestoreStep = null;
+    resetAll();
+  }
+
   /* ===== Init ===== */
   document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
   initTheme();
   initBundeslandSelect();
   const restoredStep = loadState();
   updateBundeslandDisplay();
-  // Immer in Step 1 (Bundesland) starten, damit die Auswahl
-  // bei jedem Sessionstart einmal bestätigt wird.
-  if (restoredStep && state.bundesland) {
-    document.getElementById('restored-banner').classList.remove('hidden');
-  }
   showStep(1);
+  // Wenn echte Eingaben vom Vortag noch da sind, frag den User
+  // ob er weitermachen oder den Tag archivieren will.
+  if (restoredStep && dayHasWork(state)) {
+    setTimeout(() => showRestoreModal(restoredStep), 250);
+  }
 </script>
 </body>
 </html>
