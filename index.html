@@ -709,6 +709,36 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* ===== Über-Modal ===== */
+  .modal-about-card .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .modal-about-card .modal-body p { margin-bottom: 4px; }
+  .modal-about-card .about-section-title {
+    margin-top: 14px;
+    margin-bottom: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+  }
+  .modal-about-card .about-version-tag {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+  .modal-about-card a {
+    color: var(--db-red);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .modal-about-card a:hover { text-decoration: underline; }
+
   /* ===== Spruch-Modal Special Styling ===== */
   .modal-spruch-card {
     position: relative;
@@ -1397,6 +1427,31 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalAbout">
+  <div class="modal-card modal-about-card">
+    <div class="modal-title">Über</div>
+    <div class="modal-body">
+      <p><strong>Arbeitszeit-Rechner</strong> <span class="about-version-tag">Version <span id="aboutVersion">—</span></span></p>
+      <p style="margin-top:8px;">Persönliches Open-Source-Projekt zur Erfassung der täglichen Arbeitszeit in AE (Arbeitseinheiten).</p>
+
+      <div class="about-section-title">Entwickelt von</div>
+      <p>Marvin Duhn · <a href="https://github.com/marvdevlabs" target="_blank" rel="noopener">@marvdevlabs</a></p>
+
+      <div class="about-section-title">Kontakt &amp; Feedback</div>
+      <p><a href="https://github.com/marvdevlabs/arbeitszeit/issues" target="_blank" rel="noopener">GitHub Issues öffnen →</a></p>
+
+      <div class="about-section-title">Datenschutz</div>
+      <p>Diese App speichert alle Daten <strong>ausschließlich lokal</strong> im Browser (LocalStorage). Es werden keine Daten an Server übertragen, keine Cookies gesetzt, keine externen Aufrufe gemacht.</p>
+
+      <div class="about-section-title">Hinweis</div>
+      <p style="color:var(--text-muted);">Privates Hobby-Projekt. Kein offizielles Tool der Deutschen Bahn AG. Nutzung auf eigene Verantwortung — keine Gewähr für die Korrektheit der Berechnungen.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAboutModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalBackup">
   <div class="modal-card">
     <div class="modal-title">Daten-Sicherung</div>
@@ -1434,6 +1489,8 @@
     <span id="appVersion" onclick="onVersionClick()" title="" role="button">v–</span>
     <span class="sep">·</span>
     <a href="https://github.com/marvdevlabs/arbeitszeit" target="_blank" rel="noopener">@marvdevlabs</a>
+    <span class="sep">·</span>
+    <a href="#" onclick="openAboutModal(); return false;">Über</a>
   </div>
   <div class="footer-disclaimer">Privates Open-Source-Projekt · Kein offizielles Tool der Deutschen Bahn AG</div>
 </div>
@@ -1441,7 +1498,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.9.3';
+  const APP_VERSION = '1.10.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1824,6 +1881,15 @@
         () => fallbackCopy(text)
       );
     } else { fallbackCopy(text); }
+  }
+
+  /* ===== Über-Modal ===== */
+  function openAboutModal() {
+    document.getElementById('aboutVersion').textContent = APP_VERSION;
+    document.getElementById('modalAbout').classList.remove('hidden');
+  }
+  function closeAboutModal() {
+    document.getElementById('modalAbout').classList.add('hidden');
   }
 
   /* ===== Backup / Restore ===== */
