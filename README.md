@@ -1,28 +1,71 @@
 # Arbeitszeit-Rechner
 
-Single-File-Webapp zum Erfassen und Berechnen der täglichen Arbeitszeit (1 AE = 10 min, Sollarbeitszeit 7:48h). Mobile-first, offline-fähig, keine Server-Komponente.
+Single-File-Webapp zum täglichen Erfassen der Arbeitszeit in **AE (Arbeitseinheiten, 1 AE = 10 min)**. Mobile-first, offline-fähig, keine Server-Komponente — alle Daten bleiben im Browser.
 
-**Version:** 1.11.0 · **Live:** [marvdevlabs.github.io/arbeitszeit](https://marvdevlabs.github.io/arbeitszeit/)
+**Version:** 1.11.1 · **Live:** [marvdevlabs.github.io/arbeitszeit](https://marvdevlabs.github.io/arbeitszeit/)
 
 <p align="center">
-  <img src="docs/screenshots/06-step5-full.png" alt="Arbeitszeit-Rechner – Übersicht" width="380">
+  <img src="docs/screenshots/06-step5-full.png" alt="Arbeitszeit-Rechner – Komplette Übersicht in Step 5" width="380">
 </p>
 
 ---
 
 ## Funktionen
 
-- **5-Schritt-Eingabe-Assistent** mit Punkte-Indikator
-- **Alle 16 Bundesländer** mit kompletter Berücksichtigung gesetzlicher Feiertage (bundes- und länderspezifisch)
-- **Bereitschaft an Wochenenden / Feiertagen:** kein An-/Abfahrt-Abzug (60 min entfallen, nur Pause)
-- **Automatische Pause** nach Bruttozeit (0 / 30 / 45 min)
-- **Splits pro Auftrag** (10, 11, 20, 29, 40, 50)
-- **Rich Summary** mit Brutto/Netto, AE-Total, Soll-Vergleich, 10h-Status (ArbZG)
-- **Protokoll-Export** als Klartext (Kopieren) oder PDF (Print, A4 quer)
-- **Verlauf der letzten 14 Tage** mit erneutem Protokoll-Export
-- **Light / Dark Mode** mit automatischer Erkennung
-- **iOS Home-Screen-fähig** (PWA-Meta-Tags, Safe-Area, eigenes Icon)
-- **Speicher im Browser** (LocalStorage), Bundesland persistent über alle Tage
+### Eingabe
+
+- **5-Step-Assistent** mit Punkte-Indikator: Bundesland → Bereitschaft → Datum/Zeit/Anzahl → SAP-Nummern → AE-Werte
+- **Alle 16 Bundesländer** wählbar (Pflichtfeld, bleibt persistent)
+- **Bereitschaft** Ja/Nein legt Standard-Startzeit fest (09:00 / 06:30)
+- **Datum frei wählbar** — auch nachträgliches Erfassen vergessener Tage möglich
+- **Splits** pro Auftrag (10, 11, 20, 29, 40, 50) — jeder gewählte Split bekommt eine eigene AE-Eingabezeile
+
+### Berechnung
+
+- **Live-Berechnung** bei jeder Eingabe
+- **Sollarbeitszeit 7:48h** netto (ohne Anfahrt/Abfahrt/Pause)
+- **Fester Abzug** 30 min Anfahrt + 30 min Abfahrt
+- **An Wochenenden & Feiertagen mit Bereitschaft entfällt der An-/Abfahrt-Abzug** — nur Pause
+- **Automatische Pause** je nach Bruttozeit: 0 min / 30 min / 45 min
+- **10h-Limit** nach §3 ArbZG mit Warn-Modal und Auto-Revert beim Korrigieren
+
+### Feiertage je Bundesland
+
+- **Bundeseinheitliche Feiertage** automatisch (Neujahr, Karfreitag, Ostermontag, 1. Mai, Christi Himmelfahrt, Pfingstmontag, Tag der Deutschen Einheit, 25./26.12.)
+- **Länderspezifische Feiertage** korrekt zugeordnet (z.B. Fronleichnam in BW/BY/HE/NW/RP/SL, Heilige Drei Könige in BW/BY/ST, etc.)
+- **Bewegliche Feiertage** über Gauß'sche Osterformel — funktioniert für jedes Jahr
+
+### Verlauf
+
+- **Letzte 14 Tage** werden automatisch beim „Neuer Tag starten" archiviert
+- **Beim Öffnen mit alten Daten:** Modal-Frage „Weiterarbeiten oder in Verlauf archivieren?"
+- **Pro Eintrag:** Wochentag, Datum, Bereitschafts-/Feiertags-Badge, Anzahl Aufträge, Gesamt-AE
+- **Erneut abrufbar:** vollständiges Protokoll mit Kopier-Funktion
+- **Einzelne Einträge oder kompletten Verlauf löschbar**
+
+### Export & Backup
+
+- **Kopieren** — Klartext-Protokoll in die Zwischenablage (für Mail, Slack, etc.)
+- **Drucken** — A4 quer, optimiert für 1-Seiten-PDF (System-Druck-Dialog)
+- **JSON-Backup** — komplette App-Daten herunterladen (Tag + Verlauf + Bundesland + Theme)
+- **JSON-Restore** — Backup einlesen, alle Daten überschreiben
+
+### Komfort & Polish
+
+- **Live-Schicht-Status** im Header (Step 5) — „Heute · 7h 30min · noch −18 min bis Soll" — farbig nach Status
+- **Info-Tooltips** bei Fachbegriffen (Zeit / AE-Werte / Soll / 10h)
+- **Dark / Light Mode** mit System-Erkennung
+- **Custom Reset-Modal** statt Browser-Confirm
+- **10h-Modal mit Auto-Revert** — bei „Werte korrigieren" wird der letzte zu hoch eingegebene Wert automatisch zurückgesetzt
+- **Über-Modal** mit Author, Kontakt-Link und Datenschutz-Statement
+
+### PWA & Offline
+
+- **Service Worker** — App funktioniert auch ohne Internet (im Tunnel, Funkloch)
+- **Web App Manifest** — Android-Install-Banner („App installieren")
+- **Apple-Touch-Icon** — iOS „Zum Home-Bildschirm" mit eigenem App-Icon
+- **Safe-Area-Insets** — Notch-fest auf iPhone
+- **Eigenes Stoppuhr-Icon** auf Anthrazit-Hintergrund
 
 ---
 
@@ -32,9 +75,9 @@ Single-File-Webapp zum Erfassen und Berechnen der täglichen Arbeitszeit (1 AE =
 
 <img src="docs/screenshots/01-step1-bundesland.png" alt="Step 1: Bundesland" width="360" align="right">
 
-Beim ersten Öffnen ist die Auswahl Pflicht — ohne Bundesland geht es nicht weiter (für die korrekte Feiertagsberechnung). Die Wahl bleibt für alle künftigen Tage gespeichert.
+Die App startet **immer** bei der Bundesland-Auswahl. Pflichtfeld — ohne Auswahl geht es nicht weiter. Die letzte Wahl bleibt vorausgewählt, du klickst beim nächsten Mal einfach durch.
 
-Im Header oben rechts taucht nach der Auswahl ein kleines Pill mit dem Kürzel (z.B. **NW**) auf — Klick darauf bringt dich später jederzeit zurück zu Schritt 1, um zu ändern.
+Im Header oben rechts erscheint nach der Auswahl ein kleines Pill mit dem Kürzel (z.B. **NW**) — Klick darauf bringt dich jederzeit zurück zu Schritt 1.
 
 <br clear="all">
 
@@ -53,9 +96,9 @@ Die Startzeit kannst du im nächsten Schritt noch frei anpassen.
 
 <img src="docs/screenshots/03-step3-datum-wochenende.png" alt="Step 3: Datum" width="360" align="right">
 
-**Datum** ist automatisch *heute*, lässt sich aber frei wählen — wichtig fürs Erfassen vergessener Tage. Direkt darunter siehst du:
+**Datum** ist automatisch heute, aber frei wählbar — auch in der Vergangenheit, falls du einen Tag nachträgst. Direkt darunter siehst du:
 
-- den **Wochentag**
+- **Wochentag** ausgeschrieben
 - bei Wochenende oder Feiertag einen **Hinweis-Tag**
 - bei Bereitschaft + Sa/So/Feiertag den grünen Hinweis **„ohne An-/Abfahrt-Abzug"**
 
@@ -67,22 +110,22 @@ Die Startzeit kannst du im nächsten Schritt noch frei anpassen.
 
 <img src="docs/screenshots/04-step4-sap-splits.png" alt="Step 4: SAP" width="360" align="right">
 
-Pro Auftrag eine **SAP-Nummer** eintragen. Falls Splits relevant sind (Kostenstellen / Tätigkeitsschlüssel), eines oder mehrere aus **10, 11, 20, 29, 40, 50** auswählen. Jeder gewählte Split bekommt im nächsten Schritt eine eigene Zeile zur AE-Eingabe.
+Pro Auftrag eine **SAP-Nummer** eintragen. Falls Splits relevant sind, eines oder mehrere aus **10, 11, 20, 29, 40, 50** auswählen. Jeder gewählte Split bekommt im nächsten Schritt eine eigene Zeile zur AE-Eingabe.
 
 <br clear="all">
 
-### Schritt 5 — AE-Werte erfassen und Protokoll erzeugen
+### Schritt 5 — AE-Werte erfassen
 
 <img src="docs/screenshots/05-step5-auftraege.png" alt="Step 5: Auftrag-Karten" width="360" align="right">
 
 Pro Auftrags-Karte:
 
 - **Auftrags-Titel** (klickbar zum Umbenennen — SAP-Nummer ist Default)
-- **Reisezeit** (Schalter aktiviert die Eingabe, Standard 0,5 AE)
-- **Arbeitszeit** — pro Split eine eigene Zeile, alle Zeiten in **AE** (1 AE = 10 min)
+- **Reisezeit** (Schalter aktiviert die Eingabe, Default 0,5 AE)
+- **Arbeitszeit** — pro Split eine eigene Zeile, alles in AE (1 AE = 10 min)
 - **Rückzeit** zum nächsten Auftrag oder als Heimfahrt
 
-Die berechneten Uhrzeiten links neben dem Eingabefeld aktualisieren sich live, ebenso die Übersicht ganz unten.
+Die berechneten Uhrzeiten links neben den Eingabefeldern aktualisieren sich live, ebenso die Übersicht ganz unten — und der **Live-Status oben im Header**.
 
 <br clear="all">
 
@@ -92,18 +135,17 @@ Die berechneten Uhrzeiten links neben dem Eingabefeld aktualisieren sich live, e
   <img src="docs/screenshots/07-summary.png" alt="Summary" width="380">
 </p>
 
-- **Zeit** — Brutto, Pause (automatisch), Netto-Arbeitszeit
-- **AE-Werte** — Reise / Arbeit / Rück / Gesamt
-- **Soll-Vergleich** — grün wenn 7:48h erreicht, gelb mit „+x" bei Plusstunden, sonst „−x bis Soll"
-- **10h-Status** — Warnstufe bei Überschreitung der gesetzlichen Höchstarbeitszeit nach §3 ArbZG
-
-Kleine **i-Icons** neben den Abschnitten geben Erklärungen zu den Fachbegriffen. Tap außerhalb schließt sie wieder.
+- **Zeit:** Brutto, Pause (automatisch), Netto-Arbeitszeit
+- **AE-Werte:** Reise / Arbeit / Rück / Gesamt
+- **Soll-Vergleich:** grün wenn 7:48h erreicht, gelb mit „+x" bei Plus, sonst „−x bis Soll"
+- **10h-Status:** Warnstufe bei Überschreitung der gesetzlichen Höchstarbeitszeit nach §3 ArbZG
+- Kleine **i-Icons** neben den Abschnitten erklären die Fachbegriffe per Tap
 
 ### Aktionen am Ende
 
-- **Kopieren** — vollständiges Klartext-Protokoll in die Zwischenablage (z.B. für Slack oder Mail)
-- **Neuer Tag** — öffnet das Bestätigungs-Modal (siehe unten)
-- **Als PDF** — druckt im A4-Querformat, optimiert für 1-seitige Ausgabe
+- **Kopieren** — vollständiges Klartext-Protokoll in die Zwischenablage
+- **Drucken** — System-Druck-Dialog (PDF-Speichern dort wählbar, A4 quer)
+- **Neuer Tag** — öffnet das Reset-Bestätigungs-Modal
 
 ---
 
@@ -111,33 +153,61 @@ Kleine **i-Icons** neben den Abschnitten geben Erklärungen zu den Fachbegriffen
 
 <img src="docs/screenshots/08-modal-reset.png" alt="Reset-Modal" width="360" align="right">
 
-Klick auf **Neuer Tag** (oder das Banner „Daten vom letzten Mal wiederhergestellt" → „Neuer Tag starten →") öffnet das Bestätigungs-Modal.
+Klick auf **Neuer Tag** öffnet das Bestätigungs-Modal.
 
-Bei Bestätigung wird der aktuelle Tag **automatisch in den Verlauf archiviert**, sofern er bereits AE-Werte enthält. Bundesland, Theme und Verlauf bleiben erhalten.
+Bei Bestätigung wird der aktuelle Tag **automatisch in den Verlauf archiviert** (sofern AE-Werte vorhanden), dann startet ein neuer Tag bei Step 1. Bundesland, Theme und Verlauf bleiben erhalten.
 
 <br clear="all">
 
 ## Verlauf
 
-<img src="docs/screenshots/10-modal-verlauf.png" alt="Verlauf-Modal" width="360" align="right">
+<img src="docs/screenshots/09-modal-verlauf.png" alt="Verlauf-Modal" width="360" align="right">
 
-Das **Uhren-Icon** oben im Header öffnet den Verlauf. Listet die letzten 14 archivierten Tage mit Datum, Wochentag, ggf. Bereitschafts- und Feiertags-Badge, Anzahl Aufträge und Gesamt-AE.
+Das **Uhren-Icon** im Header öffnet den Verlauf. Listet die letzten 14 archivierten Tage mit Datum, Wochentag, ggf. Bereitschaft- und Feiertags-Badge, Anzahl Aufträge und Gesamt-AE.
 
-Klick auf einen Eintrag zeigt das vollständige Klartext-Protokoll des Tages — direkt erneut kopierbar.
+- **Klick auf einen Eintrag** → komplettes Klartext-Protokoll, direkt erneut kopierbar
+- **× rechts oben** → einzelnen Eintrag löschen (mit Bestätigung)
+- **„Verlauf löschen"** → kompletten Verlauf entfernen (mit Bestätigung)
 
-Ältere Einträge werden automatisch verworfen.
+Ältere Einträge werden bei Überschreitung von 14 Tagen automatisch verworfen.
 
 <br clear="all">
+
+## Daten-Sicherung
+
+<img src="docs/screenshots/10-modal-backup.png" alt="Backup-Modal" width="360" align="right">
+
+Das **Disketten-Icon** im Header öffnet die Daten-Sicherung.
+
+- **Herunterladen:** JSON-Datei mit allem (aktueller Tag, Verlauf, Bundesland, Theme) — Dateiname `arbeitszeit-backup-YYYY-MM-DD.json`
+- **Hochladen:** Backup-Datei wählen → alle Daten werden überschrieben
+
+Sichere Geräte-Wechsel-Strategie: vorher auf altem Gerät runterladen, AirDrop/Mail an neues Gerät, dort hochladen.
+
+<br clear="all">
+
+## Tipps & Tricks
+
+- **Bundesland-Pill im Header** ist klickbar → springt jederzeit zurück zu Step 1 (z.B. bei Dienstreise in ein anderes Bundesland)
+- **Auftrags-Namen** kannst du in Step 5 direkt im Titel-Feld umbenennen — Standard ist die SAP-Nummer, du kannst aber freie Namen vergeben
+- **Reise-/Rückzeit** werden über Toggle-Schalter aktiviert — wenn nicht aktiv, zählen sie nicht zur Rechnung
+- **Datum nachträglich erfassen:** in Step 3 das Datum einfach auf den vergangenen Tag stellen, der Rest läuft normal
+- **Mehrere Splits auf einem Auftrag** verteilen die Arbeitszeit auf separate AE-Felder, die einzeln summiert werden
+- **PWA-Installation** auf iOS: in Safari öffnen → Teilen → „Zum Home-Bildschirm" — App läuft danach im Vollbild ohne Adressleiste, auch offline
+- **Theme-Toggle** (Sonne/Mond im Header) reagiert auf System-Einstellung beim ersten Start, danach manuell setzbar
+- **Es gibt ein paar kleine Geheimnisse im Footer und im Header** — wer's findet darf darüber lachen 😉
 
 ---
 
 ## Tech-Stack
 
-- **Single-File HTML** — keine Build-Tools, keine Dependencies, keine externen Aufrufe
-- **Vanilla JavaScript** (~1.300 Zeilen) — Vollständig im Inline-`<script>`
+- **Single-File HTML** — eine `index.html` enthält alles (HTML, CSS, JS)
+- **Vanilla JavaScript** — keine Dependencies, keine Build-Tools
 - **CSS Custom Properties** für Light/Dark-Theme
-- **LocalStorage** für Persistenz (Tag, Verlauf, Bundesland, Theme)
-- **PWA-Meta-Tags** für „Zum Home-Bildschirm" auf iOS / Android
+- **LocalStorage** für Persistenz (Tag + Verlauf + Bundesland + Theme)
+- **Service Worker** (`sw.js`) — Offline-Cache via stale-while-revalidate
+- **Web App Manifest** (`manifest.json`) — PWA-Install-Banner auf Android
+- **Hosting:** GitHub Pages
 
 ### Lokal entwickeln
 
@@ -148,7 +218,7 @@ python3 -m http.server 8000
 # Browser: http://localhost:8000
 ```
 
-Bearbeite einfach `index.html` und neu laden — kein Build-Schritt.
+Bearbeite `index.html` und neu laden — kein Build-Schritt, kein npm install.
 
 ### Deployment
 
@@ -158,20 +228,23 @@ Live-Version läuft über **GitHub Pages** vom `main`-Branch. Push reicht.
 
 ## Logik im Kurzüberblick
 
-| | |
+| Wert | Erklärung |
 |---|---|
 | 1 AE | 10 Minuten |
-| Sollarbeitszeit | 7h 48min (netto, ohne An-/Abfahrt und Pause) |
-| Fester Abzug | 30 min Anfahrt + 30 min Abfahrt (entfällt bei Bereitschaft an WE/Feiertag) |
-| Pause (auto) | 0 min bei < 6h Arbeit / 30 min bei 6–9h / 45 min bei > 9h |
+| Sollarbeitszeit | 7 h 48 min netto (ohne An-/Abfahrt und Pause) |
+| Fester Abzug | 30 min Anfahrt + 30 min Abfahrt |
+| An WE/Feiertag mit Bereitschaft | **kein** An-/Abfahrt-Abzug — nur Pause |
+| Pause automatisch | 0 min bei < 6h Arbeit · 30 min bei 6–9h · 45 min bei > 9h |
 | Höchstarbeitszeit | 10 h inkl. An-/Abfahrt (§3 ArbZG) |
+| Plus-Zeit | wird ab Überschreitung von 7:48h netto ausgewiesen |
 | Splits | 10, 11, 20, 29, 40, 50 |
+| Verlaufs-Maximum | 14 archivierte Tage |
 
 ### Feiertage je Bundesland
 
-Bundesweit: Neujahr · Karfreitag · Ostermontag · 1. Mai · Christi Himmelfahrt · Pfingstmontag · Tag der Deutschen Einheit · 25. & 26. Dezember.
+**Bundesweit:** Neujahr · Karfreitag · Ostermontag · 1. Mai · Christi Himmelfahrt · Pfingstmontag · Tag der Deutschen Einheit · 25. & 26. Dezember.
 
-Länderspezifisch (Auszug):
+**Länderspezifisch (Auszug):**
 
 - **BW, BY, ST:** Heilige Drei Könige
 - **BW, BY, HE, NW, RP, SL:** Fronleichnam
@@ -183,10 +256,20 @@ Länderspezifisch (Auszug):
 - **TH:** Weltkindertag
 - **BB, HB, HH, MV, NI, SN, ST, SH, TH:** Reformationstag
 
-Berechnung der beweglichen Feiertage via Gauß'scher Osterformel — funktioniert für jedes Jahr ohne Tabellen.
+Bewegliche Feiertage werden über die Gauß'sche Osterformel berechnet — funktioniert für jedes Jahr ohne Tabellen.
 
 ---
 
-## Lizenz
+## Lizenz & Disclaimer
 
-Privates Projekt — kein offizielles Bahn-Tool. Nutzung auf eigenes Risiko, ohne Gewähr für die Korrektheit der Berechnungen.
+<img src="docs/screenshots/11-modal-about.png" alt="Über-Modal" width="360" align="right">
+
+**Privates Open-Source-Projekt** von Marvin Duhn ([@marvdevlabs](https://github.com/marvdevlabs)).
+
+**Kein offizielles Tool der Deutschen Bahn AG.** Die App speichert alle Daten ausschließlich lokal im Browser (LocalStorage). Keine Daten verlassen das Gerät, keine externen Aufrufe, keine Cookies, kein Tracking.
+
+Nutzung auf eigene Verantwortung — keine Gewähr für die Korrektheit der Berechnungen.
+
+Bug-Reports und Feature-Wünsche bitte über [GitHub Issues](https://github.com/marvdevlabs/arbeitszeit/issues).
+
+<br clear="all">
