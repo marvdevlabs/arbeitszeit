@@ -159,55 +159,47 @@
   .step-indicator .dot.done { background: rgba(255,255,255,0.85); }
   .step-indicator .dot.current { width: 18px; background: #fff; }
 
-  .bundesland-btn {
-    background: rgba(0,0,0,0.22); color: #fff; border: none;
-    height: 32px; padding: 0 12px;
-    border-radius: 100px;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
-    cursor: pointer; font-family: inherit;
-    display: inline-flex; align-items: center; gap: 6px;
-    transition: background 0.15s, transform 0.08s;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  }
-  .bundesland-btn:hover { background: rgba(0,0,0,0.35); }
-  .bundesland-btn:active { transform: scale(0.96); }
-  .bundesland-btn::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.75);
-    flex-shrink: 0;
-  }
-  .bundesland-btn.unset { background: rgba(255, 184, 77, 0.45); }
-  .bundesland-btn.unset::before { background: #FFD27A; box-shadow: 0 0 0 3px rgba(255, 210, 122, 0.25); }
-
-  .bundesland-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    margin: 12px 0 4px;
-  }
-  .bundesland-option {
-    background: var(--bg-card-alt);
-    border: 1.5px solid var(--border);
-    color: var(--text-main);
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 12.5px; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-    text-align: left;
-    transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.08s;
-  }
-  .bundesland-option:hover {
-    border-color: var(--db-red);
-    background: var(--info-bg);
-    transform: translateY(-1px);
-  }
-  .bundesland-option.active {
-    background: linear-gradient(135deg, var(--db-red) 0%, var(--db-red-dark) 100%);
+  .bundesland-select {
+    background-color: rgba(0,0,0,0.22);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23fff' d='M5 6 0 0h10z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    background-size: 9px;
     color: #fff;
-    border-color: var(--db-red);
-    box-shadow: 0 4px 12px rgba(236,0,22,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    border: none;
+    height: 32px;
+    padding: 0 28px 0 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background-color 0.15s, box-shadow 0.15s;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .bundesland-select:hover { background-color: rgba(0,0,0,0.35); }
+  .bundesland-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(255,255,255,0.30); }
+  .bundesland-select.unset {
+    background-color: rgba(255, 184, 77, 0.55);
+    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.5);
+    animation: pulseUnset 2.2s ease-in-out infinite;
+  }
+  .bundesland-select option { background: #2A2B2F; color: #fff; font-weight: 600; }
+  @keyframes pulseUnset {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.4); }
+    50%      { box-shadow: 0 0 0 6px rgba(255, 184, 77, 0); }
+  }
+  @media (max-width: 520px) {
+    .bundesland-select { max-width: 145px; padding: 0 24px 0 11px; font-size: 11.5px; }
   }
 
   .form-row-pair {
@@ -864,9 +856,9 @@
       <div class="sub">1 AE = 10 Minuten · Soll 7:48h Arbeitszeit (ohne Anfahrt/Abfahrt/Pause)</div>
     </div>
     <div class="header-right">
-      <button class="bundesland-btn unset" id="bundeslandBtn" onclick="openBundeslandModal()" title="Bundesland wählen" aria-label="Bundesland wählen">
-        <span id="bundeslandLabel">—</span>
-      </button>
+      <select class="bundesland-select unset" id="bundeslandSelect" onchange="onBundeslandChange(this.value)" title="Bundesland wählen" aria-label="Bundesland wählen">
+        <option value="" disabled selected>Bundesland …</option>
+      </select>
       <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Theme wechseln" aria-label="Theme wechseln">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -974,19 +966,6 @@
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal10h(false)">Werte korrigieren</button>
       <button class="btn" onclick="closeModal10h(true)">Verstanden, weiter</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="modalBundesland">
-  <div class="modal-card">
-    <div class="modal-title">Bundesland wählen</div>
-    <div class="modal-body">
-      <p>In welchem Bundesland arbeitest du? Für die korrekte Berechnung der gesetzlichen Feiertage — bei Bereitschaft an Wochenenden und Feiertagen entfällt der An-/Abfahrt-Abzug.</p>
-      <div class="bundesland-grid" id="bundeslandGrid"></div>
-    </div>
-    <div class="modal-actions" id="modalBundeslandActions">
-      <button class="btn btn-secondary" id="modalBundeslandClose" onclick="closeBundeslandModal()">Schließen</button>
     </div>
   </div>
 </div>
@@ -1271,7 +1250,12 @@
     if (!datum) { alert('Bitte Datum wählen.'); return; }
     if (!anzahl || anzahl < 1) { alert('Bitte gültige Anzahl eingeben.'); return; }
     if (!startzeit) { alert('Bitte Startzeit eingeben.'); return; }
-    if (!state.bundesland) { openBundeslandModal(); return; }
+    if (!state.bundesland) {
+      const sel = document.getElementById('bundeslandSelect');
+      if (sel) sel.focus();
+      alert('Bitte zuerst Bundesland oben rechts wählen.');
+      return;
+    }
     state.anzahl = anzahl;
     state.startzeit = startzeit;
     state.date = datum;
@@ -1282,36 +1266,31 @@
   }
 
   /* ===== Bundesland & Datum Handler ===== */
-  function openBundeslandModal() {
-    const grid = document.getElementById('bundeslandGrid');
-    grid.innerHTML = BUNDESLAENDER.map(bl =>
-      `<button class="bundesland-option${state.bundesland === bl.code ? ' active' : ''}"
-         onclick="setBundesland('${bl.code}')">${bl.name}</button>`
-    ).join('');
-    const closeBtn = document.getElementById('modalBundeslandClose');
-    if (closeBtn) closeBtn.style.display = state.bundesland ? '' : 'none';
-    document.getElementById('modalBundesland').classList.remove('hidden');
+  function initBundeslandSelect() {
+    const sel = document.getElementById('bundeslandSelect');
+    if (!sel) return;
+    BUNDESLAENDER.forEach(bl => {
+      const opt = document.createElement('option');
+      opt.value = bl.code;
+      opt.textContent = bl.name;
+      sel.appendChild(opt);
+    });
   }
-  function closeBundeslandModal() {
-    document.getElementById('modalBundesland').classList.add('hidden');
-  }
-  function setBundesland(code) {
+  function onBundeslandChange(code) {
+    if (!code) return;
     state.bundesland = code;
     updateBundeslandDisplay();
-    closeBundeslandModal();
     if (currentStep === 2) updateDateInfo();
     if (currentStep === 4) renderAuftraege();
     saveState();
   }
   function updateBundeslandDisplay() {
-    const label = document.getElementById('bundeslandLabel');
-    const btn = document.getElementById('bundeslandBtn');
-    if (label) label.textContent = state.bundesland || '—';
-    if (btn) {
-      btn.classList.toggle('unset', !state.bundesland);
-      const name = state.bundesland ? (BUNDESLAENDER.find(b => b.code === state.bundesland) || {}).name : null;
-      btn.title = name ? 'Bundesland: ' + name : 'Bundesland wählen';
-    }
+    const sel = document.getElementById('bundeslandSelect');
+    if (!sel) return;
+    sel.value = state.bundesland || '';
+    sel.classList.toggle('unset', !state.bundesland);
+    const name = state.bundesland ? (BUNDESLAENDER.find(b => b.code === state.bundesland) || {}).name : null;
+    sel.title = name ? 'Bundesland: ' + name : 'Bundesland wählen';
   }
   function onDatumChange(value) {
     state.date = value || todayISO();
@@ -1748,6 +1727,7 @@
 
   /* ===== Init ===== */
   initTheme();
+  initBundeslandSelect();
   const restoredStep = loadState();
   updateBundeslandDisplay();
   if (restoredStep) {
@@ -1757,7 +1737,11 @@
     showStep(1);
   }
   if (!state.bundesland) {
-    setTimeout(() => openBundeslandModal(), 250);
+    setTimeout(() => {
+      showToast('Bitte zuerst Bundesland oben wählen');
+      const sel = document.getElementById('bundeslandSelect');
+      if (sel) sel.focus();
+    }, 350);
   }
 </script>
 </body>
