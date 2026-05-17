@@ -1498,7 +1498,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.11.7';
+  const APP_VERSION = '1.11.8';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2527,6 +2527,7 @@
       let liveStatus, liveStatusAttr = '';
       if (h10Over > 30) { liveStatus = '⛔ 10h-Grenze überschritten'; liveStatusAttr = 'over-danger'; }
       else if (h10Over > 0) { liveStatus = '⚠ 10h-Grenze überschritten'; liveStatusAttr = 'over-warn'; }
+      else if (fixAbzug === 0) { liveStatus = 'Bereitschaft · auftragsbasiert'; }
       else if (plusMin === 0 && nettoMin > 0) { liveStatus = '✓ Soll erreicht'; liveStatusAttr = 'met'; }
       else if (plusMin > 0) { liveStatus = '+' + fmtDuration(plusMin) + ' Plus'; liveStatusAttr = 'plus'; }
       else { liveStatus = 'noch −' + fmtDuration(-plusMin) + ' bis Soll'; }
@@ -2573,10 +2574,10 @@
           <div class="summary-row"><span>Rück</span><span>${formatAE(totalRueck)} AE</span></div>
           <div class="summary-row emphasized"><span>Gesamt</span><span>${formatAE(totalAE)} AE</span></div>
         </div>
-        <div class="summary-soll ${sollClass}">
+        ${fixAbzug === 0 ? '' : `<div class="summary-soll ${sollClass}">
           <span>Soll-Vergleich · 7:48h<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip">Tarifliche Sollarbeitszeit: <strong>7 h 48 min netto</strong> pro Tag — also ohne Anfahrt/Abfahrt und ohne Pause. Plus-Stunden zählen ab Überschreitung.</span></span></span>
           <span>${sollText}</span>
-        </div>
+        </div>`}
         <div class="summary-limit ${limitClass}">
           <span>10h-Status${fixAbzug > 0 ? ' · inkl. Fahrt' : ''}<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip">Gesetzliche Höchstarbeitszeit nach §3 ArbZG: <strong>10 Stunden</strong> einschließlich An-/Abfahrt. Im Durchschnitt über 6 Monate maximal 8 Stunden pro Werktag.</span></span></span>
           <span>${limitText}</span>
@@ -2659,10 +2660,14 @@
     });
     out.push('');
     out.push('====================================');
-    out.push('  ARBEITSZEIT:  ' + fmtDuration(nettoMin) + '   /   Soll 7:48h');
-    if (plusMin === 0) out.push('               ✓ Soll genau erreicht');
-    else if (plusMin < 0) out.push('               −' + fmtDuration(-plusMin) + '  (noch bis Soll)');
-    else out.push('               +' + fmtDuration(plusMin) + '  Plus');
+    if (fixAbzug === 0) {
+      out.push('  ARBEITSZEIT:  ' + fmtDuration(nettoMin) + '   (Bereitschaft · auftragsbasiert)');
+    } else {
+      out.push('  ARBEITSZEIT:  ' + fmtDuration(nettoMin) + '   /   Soll 7:48h');
+      if (plusMin === 0) out.push('               ✓ Soll genau erreicht');
+      else if (plusMin < 0) out.push('               −' + fmtDuration(-plusMin) + '  (noch bis Soll)');
+      else out.push('               +' + fmtDuration(plusMin) + '  Plus');
+    }
     out.push('====================================');
     out.push('');
     out.push('Zeitraum:    ' + minutesToHHMM(startMin) + '–' + minutesToHHMM(endMin) + '   (Brutto ' + fmtDuration(bruttoMin) + ')');
