@@ -1356,7 +1356,6 @@
   function buildAutoName(sapEntry, i) {
     let name = sapEntry.sap.trim();
     if (!name) name = 'Auftrag ' + (i + 1);
-    if (sapEntry.splits.length > 0) name += '-' + [...sapEntry.splits].sort((a, b) => a - b).join('-');
     return name;
   }
 
