@@ -1,18 +1,34 @@
 /* Arbeitszeit-Rechner Service Worker
- * Strategie: stale-while-revalidate für die HTML/Assets,
- * d.h. App startet sofort aus dem Cache und lädt im Hintergrund die neue Version.
+ *
+ * Strategie:
+ *   - Navigation (HTML)  → network-first, fallback auf Cache
+ *     (verhindert weisse Seite bei iOS-Standalone wenn Cache stale)
+ *   - Andere GET-Requests → stale-while-revalidate
+ *
+ * Install ist nicht-blockierend: schlägt cache.addAll fehl
+ * (z.B. einzelne Datei 404), wird der SW trotzdem aktiv.
  */
-const CACHE_NAME = 'arbeitszeit-v1.8.0';
+const CACHE_NAME = 'arbeitszeit-v1.8.1';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.svg'
+  '/arbeitszeit/',
+  '/arbeitszeit/index.html',
+  '/arbeitszeit/manifest.json',
+  '/arbeitszeit/icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      // Pro Asset einzeln cachen, damit ein einziger Fehler den
+      // gesamten Install nicht killt:
+      Promise.all(
+        ASSETS.map((url) =>
+          cache.add(new Request(url, { cache: 'reload' })).catch((err) =>
+            console.warn('[SW] Asset konnte nicht gecacht werden:', url, err)
+          )
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
@@ -23,18 +39,39 @@ self.addEventListener('activate', (event) => {
       Promise.all(
         keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
       )
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-  // Nur same-origin Requests handhaben
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
+  // Navigation (HTML-Seite, z.B. iOS Standalone-Start) → network-first
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then((resp) => {
+          if (resp && resp.ok) {
+            const clone = resp.clone();
+            caches.open(CACHE_NAME).then((c) =>
+              c.put('/arbeitszeit/index.html', clone)
+            );
+          }
+          return resp;
+        })
+        .catch(() =>
+          caches.match('/arbeitszeit/index.html').then((cached) =>
+            cached || caches.match('/arbeitszeit/')
+          )
+        )
+    );
+    return;
+  }
+
+  // Andere Resources → stale-while-revalidate
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
