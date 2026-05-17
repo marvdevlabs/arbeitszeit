@@ -685,6 +685,142 @@
   .protokoll-separator { border: none; border-top: 1px dashed rgba(255,255,255,0.25); margin: 8px 0; }
   h3.section { margin-top: 14px; margin-bottom: 4px; font-size: 13px; color: var(--text-strong); font-weight: 700; }
 
+  /* ===== Info-Tooltips ===== */
+  .info-wrapper {
+    position: relative;
+    display: inline-flex; align-items: center;
+    vertical-align: middle;
+  }
+  .info-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    color: rgba(255,255,255,0.95);
+    font-size: 9.5px; font-weight: 700;
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background 0.15s;
+    user-select: none;
+    flex-shrink: 0;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1;
+  }
+  .info-icon:hover { background: rgba(255,255,255,0.40); }
+  .info-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px; line-height: 1.55;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+    text-align: left;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.10);
+    min-width: 200px;
+    max-width: 260px;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.15s, transform 0.15s;
+    white-space: normal;
+  }
+  .info-wrapper.show .info-tooltip {
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  body[data-theme="dark"] .info-tooltip { background: var(--bg-card-alt); }
+
+  /* ===== Verlauf ===== */
+  .modal-card-wide { max-width: 580px; }
+  .history-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin: 8px 0 4px;
+    padding-right: 2px;
+  }
+  .history-item {
+    display: block; width: 100%;
+    background: var(--bg-card-alt);
+    border: 1.5px solid var(--border);
+    border-left: 3px solid var(--db-red);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-family: inherit;
+    color: var(--text-main);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s, transform 0.08s;
+  }
+  .history-item:hover {
+    background: var(--info-bg);
+    transform: translateY(-1px);
+  }
+  .history-item-row1 {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13.5px; font-weight: 700;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+    color: var(--text-strong);
+  }
+  .history-item-row2 {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .history-tag {
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .history-tag.bereitschaft { background: rgba(236,0,22,0.15); color: var(--db-red); }
+  .history-tag.holiday { background: rgba(255,184,77,0.32); color: #8B6914; }
+  .history-tag.weekend { background: rgba(255,184,77,0.16); color: #8B6914; }
+  body[data-theme="dark"] .history-tag.holiday { background: rgba(255,184,77,0.25); color: #FFD27A; }
+  body[data-theme="dark"] .history-tag.weekend { background: rgba(255,184,77,0.16); color: #FFD27A; }
+  .history-empty {
+    text-align: center; color: var(--text-muted);
+    padding: 28px 12px; font-size: 13px; line-height: 1.55;
+  }
+  .history-back-btn {
+    background: transparent; border: none;
+    color: var(--db-red); font-weight: 700; font-size: 13px;
+    padding: 0 0 8px; cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .history-back-btn:hover { text-decoration: underline; }
+  .history-detail-title {
+    font-weight: 700; font-size: 14.5px;
+    margin-bottom: 8px; color: var(--text-strong);
+  }
+  .history-protokoll-view {
+    background: linear-gradient(180deg, #1F2024 0%, #16171A 100%);
+    color: #ECECEC;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-family: "JetBrains Mono", "SF Mono", "Consolas", "Monaco", monospace;
+    font-size: 11.5px;
+    line-height: 1.6;
+    white-space: pre-wrap; word-break: break-word;
+    overflow-x: auto;
+    max-height: 50vh;
+    margin: 0 0 12px;
+    border: none;
+  }
+
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     background: var(--db-gray); color: #fff;
@@ -763,6 +899,7 @@
     .info-box, .button-row,
     #step1, #step2, #step3, #step4,
     .switch, .minutes-display,
+    .info-wrapper,
     .toast { display: none !important; }
 
     .step { padding: 4mm 6mm; }
@@ -864,6 +1001,9 @@
       <button class="header-bundesland hidden" id="headerBundesland" onclick="showStep(1)" title="Bundesland ändern" aria-label="Bundesland ändern">
         <span id="headerBundeslandLabel">—</span>
       </button>
+      <button class="theme-toggle" id="historyBtn" onclick="openHistoryModal()" title="Verlauf" aria-label="Verlauf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </button>
       <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Theme wechseln" aria-label="Theme wechseln">
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -880,7 +1020,7 @@
 
   <div class="restored-banner hidden" id="restored-banner">
     <span>Daten vom letzten Mal wiederhergestellt.</span>
-    <button onclick="resetAll()">Neuer Tag starten →</button>
+    <button onclick="openResetModal()">Neuer Tag starten →</button>
   </div>
 
   <!-- Step 1: Bundesland -->
@@ -996,6 +1136,39 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalReset">
+  <div class="modal-card">
+    <div class="modal-title">Neuer Tag starten?</div>
+    <div class="modal-body">
+      <p>Alle Eingaben dieses Tages (Bereitschaft, Aufträge, AE-Werte) werden <strong>gelöscht</strong>.</p>
+      <p>Falls der aktuelle Tag bereits AE-Werte enthält, wird er vorher automatisch in den <strong>Verlauf</strong> archiviert (letzte 14 Tage).</p>
+      <p style="color:var(--text-muted);font-size:13px;">Bundesland, Theme und Verlauf bleiben erhalten.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeResetModal()">Abbrechen</button>
+      <button class="btn" onclick="confirmReset()">Ja, neu starten</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalHistory">
+  <div class="modal-card modal-card-wide">
+    <div class="modal-title">Verlauf · letzte 14 Tage</div>
+    <div class="modal-body">
+      <div id="historyList" class="history-list"></div>
+      <div id="historyDetail" class="hidden">
+        <button class="history-back-btn" onclick="backToHistoryList()">← Zurück zur Liste</button>
+        <div class="history-detail-title" id="historyDetailTitle"></div>
+        <pre class="history-protokoll-view" id="historyProtokollView"></pre>
+        <button class="btn btn-outline" onclick="copyHistoryProtokoll()">Protokoll kopieren</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeHistoryModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1007,6 +1180,8 @@
   const STORAGE_KEY = 'arbeitszeit-state-v2';
   const STORAGE_KEY_LEGACY = 'arbeitszeit-state-v1';
   const THEME_KEY = 'arbeitszeit-theme';
+  const HISTORY_KEY = 'arbeitszeit-history-v1';
+  const HISTORY_MAX = 14;
 
   const BUNDESLAENDER = [
     { code: 'BW', name: 'Baden-Württemberg' },
@@ -1179,7 +1354,7 @@
     } catch (e) { return null; }
   }
   function resetAll() {
-    if (!confirm('Alle gespeicherten Eingaben löschen und neu starten?')) return;
+    archiveCurrentDay();
     const keepBundesland = state.bundesland;
     try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
     try { localStorage.removeItem(STORAGE_KEY_LEGACY); } catch (e) {}
@@ -1196,8 +1371,161 @@
     document.getElementById('restored-banner').classList.add('hidden');
     document.getElementById('modal10h').classList.add('hidden');
     saveState();
-    showStep(1);
+    showStep(state.bundesland ? 2 : 1);
   }
+
+  /* ===== Reset-Modal ===== */
+  function openResetModal() { document.getElementById('modalReset').classList.remove('hidden'); }
+  function closeResetModal() { document.getElementById('modalReset').classList.add('hidden'); }
+  function confirmReset() { closeResetModal(); resetAll(); }
+
+  /* ===== Verlauf ===== */
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return {};
+      const obj = JSON.parse(raw);
+      return (typeof obj === 'object' && obj) ? obj : {};
+    } catch (e) { return {}; }
+  }
+  function saveHistory(history) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
+  }
+  function dayHasWork(s) {
+    if (!s || !Array.isArray(s.auftraege)) return false;
+    return s.auftraege.some(a =>
+      (a.reiseAktiv && a.reiseAE > 0) ||
+      (a.rueckAktiv && a.rueckAE > 0) ||
+      (Array.isArray(a.workEntries) && a.workEntries.some(e => e.ae > 0))
+    );
+  }
+  function archiveCurrentDay() {
+    if (!state.date) return;
+    if (!dayHasWork(state)) return;
+    const history = loadHistory();
+    history[state.date] = {
+      date: state.date,
+      bundesland: state.bundesland,
+      bereitschaft: state.bereitschaft,
+      anzahl: state.anzahl,
+      startzeit: state.startzeit,
+      sapNumbers: JSON.parse(JSON.stringify(state.sapNumbers || [])),
+      auftraege: JSON.parse(JSON.stringify(state.auftraege || [])),
+      archivedAt: Date.now()
+    };
+    const dates = Object.keys(history).sort().reverse();
+    if (dates.length > HISTORY_MAX) {
+      dates.slice(HISTORY_MAX).forEach(d => delete history[d]);
+    }
+    saveHistory(history);
+  }
+  function getHistoryEntries() {
+    const h = loadHistory();
+    return Object.values(h).sort((a, b) => b.date.localeCompare(a.date));
+  }
+  function calcHistoryTotalAE(entry) {
+    let total = 0;
+    (entry.auftraege || []).forEach(a => {
+      if (a.reiseAktiv) total += a.reiseAE || 0;
+      if (a.rueckAktiv) total += a.rueckAE || 0;
+      (a.workEntries || []).forEach(e => total += e.ae || 0);
+    });
+    return total;
+  }
+
+  function openHistoryModal() {
+    const list = document.getElementById('historyList');
+    const detail = document.getElementById('historyDetail');
+    detail.classList.add('hidden');
+    list.classList.remove('hidden');
+    const entries = getHistoryEntries();
+    if (entries.length === 0) {
+      list.innerHTML = '<div class="history-empty">Noch keine archivierten Tage.<br>Beim Klick auf „Neuer Tag starten →" wird der aktuelle Tag (falls AE > 0) automatisch in den Verlauf geschoben.</div>';
+    } else {
+      list.innerHTML = entries.map(renderHistoryEntryItem).join('');
+    }
+    document.getElementById('modalHistory').classList.remove('hidden');
+  }
+  function closeHistoryModal() {
+    document.getElementById('modalHistory').classList.add('hidden');
+  }
+  function renderHistoryEntryItem(entry) {
+    const d = parseLocalDate(entry.date);
+    const weekday = WEEKDAYS_SHORT[d.getDay()];
+    const totalAE = calcHistoryTotalAE(entry);
+    const holiday = getHolidayName(entry.date, entry.bundesland);
+    const weekend = isWeekend(entry.date);
+    let tags = '';
+    if (entry.bereitschaft) tags += '<span class="history-tag bereitschaft">Bereitschaft</span>';
+    if (holiday) tags += `<span class="history-tag holiday">${escapeHtml(holiday)}</span>`;
+    else if (weekend) tags += '<span class="history-tag weekend">Wochenende</span>';
+    return `
+      <button class="history-item" onclick="viewHistoryEntry('${entry.date}')">
+        <div class="history-item-row1">
+          <span>${weekday}, ${formatDateDE(entry.date)}</span>
+          ${tags}
+        </div>
+        <div class="history-item-row2">
+          <span>${(entry.auftraege || []).length} Auftrag(e)</span>
+          <span>${formatAE(totalAE)} AE gesamt</span>
+        </div>
+      </button>
+    `;
+  }
+  function viewHistoryEntry(date) {
+    const history = loadHistory();
+    const entry = history[date];
+    if (!entry) return;
+    const ensured = {
+      bundesland: entry.bundesland || null,
+      date: entry.date,
+      bereitschaft: !!entry.bereitschaft,
+      anzahl: entry.anzahl || 0,
+      startzeit: entry.startzeit || '06:30',
+      sapNumbers: entry.sapNumbers || [],
+      auftraege: entry.auftraege || [],
+      tenHourAck: true
+    };
+    const savedState = state;
+    state = ensured;
+    let protokoll;
+    try { protokoll = buildPlainTextProtokoll(); }
+    finally { state = savedState; }
+    const d = parseLocalDate(entry.date);
+    const weekday = WEEKDAYS_LONG[d.getDay()];
+    document.getElementById('historyDetailTitle').textContent = weekday + ', ' + formatDateDE(entry.date);
+    document.getElementById('historyProtokollView').textContent = protokoll;
+    document.getElementById('historyList').classList.add('hidden');
+    document.getElementById('historyDetail').classList.remove('hidden');
+  }
+  function backToHistoryList() {
+    document.getElementById('historyDetail').classList.add('hidden');
+    document.getElementById('historyList').classList.remove('hidden');
+  }
+  function copyHistoryProtokoll() {
+    const text = document.getElementById('historyProtokollView').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => showToast('Protokoll kopiert ✓'),
+        () => fallbackCopy(text)
+      );
+    } else { fallbackCopy(text); }
+  }
+
+  /* ===== Info-Tooltips ===== */
+  function toggleInfo(el, ev) {
+    if (ev) ev.stopPropagation();
+    const wrapper = el.closest('.info-wrapper');
+    if (!wrapper) return;
+    const wasOpen = wrapper.classList.contains('show');
+    document.querySelectorAll('.info-wrapper.show').forEach(w => w.classList.remove('show'));
+    if (!wasOpen) wrapper.classList.add('show');
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest || !e.target.closest('.info-wrapper')) {
+      document.querySelectorAll('.info-wrapper.show').forEach(w => w.classList.remove('show'));
+    }
+  });
 
   /* ===== 10h Modal ===== */
   function showModal10h(value) {
@@ -1608,24 +1936,24 @@
       </div>
       <div class="summary-grid">
         <div class="summary-section">
-          <div class="summary-section-title">Zeit</div>
+          <div class="summary-section-title">Zeit<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip"><strong>Brutto</strong> = Start bis Ende. <strong>Netto</strong> = Brutto minus An-/Abfahrt minus Pause. Pause wird automatisch gesetzt: 0 min bei &lt; 6h, 30 min bei 6–9h, 45 min bei &gt; 9h Arbeit.</span></span></div>
           <div class="summary-row"><span>Brutto</span><span>${fmtDuration(bruttoMin)}</span></div>
           <div class="summary-row"><span>${abzugLabel}</span><span>${abzugValue}</span></div>
           <div class="summary-row emphasized"><span>Arbeit netto</span><span>${fmtDuration(nettoMin)}</span></div>
         </div>
         <div class="summary-section">
-          <div class="summary-section-title">AE-Werte</div>
+          <div class="summary-section-title">AE-Werte<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip">Eine <strong>AE</strong> (Arbeitseinheit) entspricht 10 Minuten. 6 AE = 1 Stunde. Reise-, Arbeits- und Rückzeit werden jeweils in AE abgerechnet.</span></span></div>
           <div class="summary-row"><span>Reise</span><span>${formatAE(totalReise)} AE</span></div>
           <div class="summary-row"><span>Arbeit</span><span>${formatAE(totalArbeit)} AE</span></div>
           <div class="summary-row"><span>Rück</span><span>${formatAE(totalRueck)} AE</span></div>
           <div class="summary-row emphasized"><span>Gesamt</span><span>${formatAE(totalAE)} AE</span></div>
         </div>
         <div class="summary-soll ${sollClass}">
-          <span>Soll-Vergleich · 7:48h</span>
+          <span>Soll-Vergleich · 7:48h<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip">Tarifliche Sollarbeitszeit: <strong>7 h 48 min netto</strong> pro Tag — also ohne Anfahrt/Abfahrt und ohne Pause. Plus-Stunden zählen ab Überschreitung.</span></span></span>
           <span>${sollText}</span>
         </div>
         <div class="summary-limit ${limitClass}">
-          <span>10h-Status${fixAbzug > 0 ? ' · inkl. Fahrt' : ''}</span>
+          <span>10h-Status${fixAbzug > 0 ? ' · inkl. Fahrt' : ''}<span class="info-wrapper"><span class="info-icon" onclick="toggleInfo(this, event)">i</span><span class="info-tooltip">Gesetzliche Höchstarbeitszeit nach §3 ArbZG: <strong>10 Stunden</strong> einschließlich An-/Abfahrt. Im Durchschnitt über 6 Monate maximal 8 Stunden pro Werktag.</span></span></span>
           <span>${limitText}</span>
         </div>
       </div>
