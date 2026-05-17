@@ -1180,7 +1180,22 @@
       </div>
     </div>
     <div class="modal-actions">
+      <button class="btn btn-outline hidden" id="btnClearHistory" onclick="openClearHistoryModal()">Verlauf löschen</button>
       <button class="btn btn-secondary" onclick="closeHistoryModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalClearHistory">
+  <div class="modal-card">
+    <div class="modal-title">Verlauf löschen?</div>
+    <div class="modal-body">
+      <p>Alle <strong>archivierten Tage</strong> werden unwiderruflich entfernt.</p>
+      <p style="color:var(--text-muted);font-size:13px;">Der aktuelle Tag, Bundesland und Theme bleiben erhalten.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cancelClearHistory()">Abbrechen</button>
+      <button class="btn" onclick="confirmClearHistory()">Ja, löschen</button>
     </div>
   </div>
 </div>
@@ -1467,10 +1482,26 @@
     } else {
       list.innerHTML = entries.map(renderHistoryEntryItem).join('');
     }
+    const btnClear = document.getElementById('btnClearHistory');
+    if (btnClear) btnClear.classList.toggle('hidden', entries.length === 0);
     document.getElementById('modalHistory').classList.remove('hidden');
   }
   function closeHistoryModal() {
     document.getElementById('modalHistory').classList.add('hidden');
+  }
+  function openClearHistoryModal() {
+    document.getElementById('modalHistory').classList.add('hidden');
+    document.getElementById('modalClearHistory').classList.remove('hidden');
+  }
+  function cancelClearHistory() {
+    document.getElementById('modalClearHistory').classList.add('hidden');
+    openHistoryModal();
+  }
+  function confirmClearHistory() {
+    try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+    document.getElementById('modalClearHistory').classList.add('hidden');
+    showToast('Verlauf gelöscht');
+    openHistoryModal();
   }
   function renderHistoryEntryItem(entry) {
     const d = parseLocalDate(entry.date);
