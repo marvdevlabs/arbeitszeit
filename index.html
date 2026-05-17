@@ -1114,7 +1114,7 @@
       <div class="left"><button class="btn btn-secondary" onclick="showStep(4)">← Zurück</button></div>
       <div class="right">
         <button class="btn btn-outline" onclick="copyProtokoll()">Kopieren</button>
-        <button class="btn btn-outline" onclick="sendEmail()">Per E-Mail</button>
+        <button class="btn btn-secondary" onclick="openResetModal()">Neuer Tag</button>
         <button class="btn" onclick="window.print()">Als PDF</button>
       </div>
     </div>
@@ -2055,12 +2055,6 @@
     out.push('---------------------');
     out.push('Gesamt:       ' + formatAE(totalAE).padStart(5) + ' AE   (' + fmtDuration(aeToMinutes(totalAE)) + ')');
     return out.join('\n');
-  }
-
-  function sendEmail() {
-    const subject = encodeURIComponent('Arbeitszeit-Protokoll ' + formatDateDE(state.date));
-    const body = encodeURIComponent(buildPlainTextProtokoll());
-    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
   }
 
   function copyProtokoll() {
