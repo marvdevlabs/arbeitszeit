@@ -767,24 +767,44 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 12px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px 12px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     font-size: 13px;
   }
-  .fahrtenbuch-trip-time {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    color: var(--text-strong);
-    white-space: nowrap;
+  .fahrtenbuch-trip-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
   }
-  .fahrtenbuch-trip-time small {
-    display: block;
-    font-weight: 400;
+  .fahrtenbuch-trip-edit input {
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1.5px solid var(--border-input);
+    border-radius: 6px;
+    background: var(--bg-input);
+    color: var(--text-main);
+    width: auto;
+    font-variant-numeric: tabular-nums;
+    font-family: inherit;
+  }
+  .fahrtenbuch-trip-edit input:focus {
+    outline: none;
+    border-color: var(--db-red);
+    box-shadow: 0 0 0 2px rgba(236,0,22,0.14);
+  }
+  .fahrtenbuch-trip-edit input[type="date"] { min-width: 132px; }
+  .fahrtenbuch-trip-edit input[type="time"] { min-width: 90px; font-weight: 700; }
+  .fahrtenbuch-trip-edit .arrow {
+    color: var(--db-red);
+    font-weight: 700;
+  }
+  .fahrtenbuch-trip-edit .meta {
     font-size: 11px;
     color: var(--text-muted);
-    margin-top: 1px;
+    margin-left: auto;
+    white-space: nowrap;
   }
   .fahrtenbuch-trip-role {
     width: 100%;
@@ -1678,7 +1698,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.14.1';
+  const APP_VERSION = '1.14.2';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2409,25 +2429,30 @@
       }
     }
 
-    // Absolute Minuten berechnen (Tageswechsel-bewusst)
-    // Pro Trip: startMin (Tagesnull = erstes Datum), endMin (kann +1 Tag sein wenn end<start)
     if (trips.length === 0) return [];
+    recomputeFahrtenbuchTripTimes(trips);
+    // Chronologisch sortieren (nur beim initialen Parsen — danach behält der User
+    // die Reihenfolge, auch wenn er Zeiten manuell ändert).
+    trips.sort((a, b) => a.startMin - b.startMin);
+    return trips;
+  }
+
+  // Berechnet startMin/endMin/durationMin pro Trip basierend auf dateISO + startTime + endTime.
+  // Tageswechsel-bewusst: wenn End-Zeit vor Start-Zeit fällt (innerhalb desselben Tags),
+  // gilt das End als Folgetag.
+  function recomputeFahrtenbuchTripTimes(trips) {
+    if (!trips || trips.length === 0) return;
     const sortedByDate = [...new Set(trips.map(t => t.dateISO))].sort();
     const dayBase = {};
     sortedByDate.forEach((d, idx) => { dayBase[d] = idx * 1440; });
-
     for (const t of trips) {
-      const [sh, sm] = t.startTime.split(':').map(Number);
-      const [eh, em] = t.endTime.split(':').map(Number);
-      t.startMin = dayBase[t.dateISO] + sh * 60 + sm;
-      t.endMin = dayBase[t.dateISO] + eh * 60 + em;
-      if (t.endMin < t.startMin) t.endMin += 1440; // Tageswechsel innerhalb der Fahrt
+      const [sh, sm] = (t.startTime || '00:00').split(':').map(Number);
+      const [eh, em] = (t.endTime || '00:00').split(':').map(Number);
+      t.startMin = (dayBase[t.dateISO] || 0) + sh * 60 + sm;
+      t.endMin = (dayBase[t.dateISO] || 0) + eh * 60 + em;
+      if (t.endMin < t.startMin) t.endMin += 1440;
       t.durationMin = t.endMin - t.startMin;
     }
-
-    // Chronologisch sortieren
-    trips.sort((a, b) => a.startMin - b.startMin);
-    return trips;
   }
 
   function showFahrtenbuchNoTrips() {
@@ -2475,12 +2500,24 @@
       const dateLbl = weekdayShort(t.weekday) + ' ' + t.dateISO.split('-').reverse().slice(0, 2).join('.');
       const dur = Math.round(t.durationMin);
       const durLbl = dur >= 60 ? Math.floor(dur / 60) + 'h ' + (dur % 60) + 'min' : dur + ' min';
+      // Tageswechsel: clockTime des Endes liegt vor clockTime des Starts
+      const [sh, sm] = (t.startTime || '00:00').split(':').map(Number);
+      const [eh, em] = (t.endTime || '00:00').split(':').map(Number);
+      const wrap = (eh * 60 + em) < (sh * 60 + sm) ? ' · +1 Tag' : '';
       const cls = t.role === 'ignore'
         ? 'fahrtenbuch-trip ignored'
         : 'fahrtenbuch-trip role-' + (t.role || '').split(':')[0];
       return '<div class="' + cls + '">' +
-        '<div class="fahrtenbuch-trip-time">' + minutesToHHMM(t.startMin) + ' → ' + minutesToHHMM(t.endMin) +
-          '<small>' + dateLbl + ' · ' + durLbl + '</small></div>' +
+        '<div class="fahrtenbuch-trip-edit">' +
+          '<input type="date" value="' + escapeHtml(t.dateISO) + '" ' +
+            'onchange="updateFahrtenbuchTripField(' + idx + ', \'dateISO\', this.value)" title="Datum">' +
+          '<input type="time" value="' + escapeHtml(t.startTime) + '" ' +
+            'onchange="updateFahrtenbuchTripField(' + idx + ', \'startTime\', this.value)" title="Start-Zeit">' +
+          '<span class="arrow">→</span>' +
+          '<input type="time" value="' + escapeHtml(t.endTime) + '" ' +
+            'onchange="updateFahrtenbuchTripField(' + idx + ', \'endTime\', this.value)" title="End-Zeit">' +
+          '<span class="meta">' + escapeHtml(weekdayShort(t.weekday)) + ' · ' + durLbl + wrap + '</span>' +
+        '</div>' +
         '<select class="fahrtenbuch-trip-role" onchange="setFahrtenbuchTripRole(' + idx + ', this.value)">' + roleHtml + '</select>' +
       '</div>';
     }).join('');
@@ -2532,7 +2569,7 @@
       : '';
 
     document.getElementById('fahrtenbuchBody').innerHTML =
-      '<p style="font-size:13px;margin-bottom:6px;"><strong>' + trips.length + '</strong> Fahrt' + (trips.length === 1 ? '' : 'en') + ' erkannt. Ordne jeder Fahrt eine Rolle zu:</p>' +
+      '<p style="font-size:13px;margin-bottom:6px;"><strong>' + trips.length + '</strong> Fahrt' + (trips.length === 1 ? '' : 'en') + ' erkannt. Datum + Zeiten sind editierbar — bei OCR-Fehlern direkt korrigieren. Dann pro Fahrt eine Rolle zuordnen:</p>' +
       '<div class="fahrtenbuch-trip-list">' + tripRows + '</div>' +
       warningsHtml +
       overwriteNotice +
@@ -2546,6 +2583,28 @@
   function setFahrtenbuchTripRole(idx, value) {
     if (!_pendingFahrtenbuchTrips || !_pendingFahrtenbuchTrips[idx]) return;
     _pendingFahrtenbuchTrips[idx].role = value;
+    renderFahrtenbuchTrips();
+  }
+
+  // Update von Datum oder Zeiten einer Fahrt — recomputed alle absoluten Minuten + re-render
+  function updateFahrtenbuchTripField(idx, field, value) {
+    if (!_pendingFahrtenbuchTrips || !_pendingFahrtenbuchTrips[idx]) return;
+    const t = _pendingFahrtenbuchTrips[idx];
+    if (field === 'dateISO') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        t.dateISO = value;
+        // Wochentag aktualisieren
+        try {
+          const d = new Date(value + 'T00:00:00');
+          if (!isNaN(d.getTime()) && Array.isArray(WEEKDAYS_LONG)) {
+            t.weekday = WEEKDAYS_LONG[d.getDay()];
+          }
+        } catch (e) {}
+      }
+    } else if (field === 'startTime' || field === 'endTime') {
+      if (/^\d{1,2}:\d{2}$/.test(value)) t[field] = value;
+    }
+    recomputeFahrtenbuchTripTimes(_pendingFahrtenbuchTrips);
     renderFahrtenbuchTrips();
   }
 
