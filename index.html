@@ -1029,8 +1029,9 @@
     margin-bottom: 2px;
     text-transform: uppercase;
   }
-  .protokoll-line { display: flex; justify-content: flex-start; gap: 16px; padding: 1px 0 1px 14px; }
-  .protokoll-time { color: #FFD27A; font-weight: 700; white-space: nowrap; min-width: 100px; }
+  .protokoll-line { display: flex; justify-content: flex-start; gap: 12px; padding: 1px 0 1px 14px; }
+  .protokoll-label { color: #ECECEC; min-width: 80px; }
+  .protokoll-time { color: #FFD27A; font-weight: 700; white-space: nowrap; }
   .protokoll-text { color: #ECECEC; }
   .protokoll-separator { border: none; border-top: 1px dashed rgba(255,255,255,0.25); margin: 8px 0; }
   h3.section { margin-top: 14px; margin-bottom: 4px; font-size: 13px; color: var(--text-strong); font-weight: 700; }
@@ -1291,7 +1292,7 @@
     .summary-arrow { margin: 0 4px; }
     .summary-label, .summary-badge { font-size: 10px; padding: 2px 7px; }
     .protokoll { font-size: 11.5px; padding: 10px 12px; }
-    .protokoll-time { min-width: 90px; }
+    .protokoll-label { min-width: 70px; }
     .btn { padding: 10px 14px; flex: 1; }
     .choice-row { grid-template-columns: 1fr; }
     .split-btn { flex: 1; min-width: 40px; }
@@ -1403,10 +1404,15 @@
     .protokoll-group { break-inside: avoid; page-break-inside: avoid; }
     .protokoll-group-header { color: var(--db-red) !important; font-size: 10pt !important; margin-bottom: 1mm; }
     .protokoll-line { break-inside: avoid; padding: 0.5mm 0 0.5mm 6mm; gap: 4mm; }
+    .protokoll-label {
+      color: #000 !important;
+      font-size: 11pt !important; font-weight: 600 !important;
+      min-width: 24mm;
+    }
     .protokoll-time {
       color: #000 !important;
       font-size: 13pt !important; font-weight: 800 !important;
-      min-width: 36mm; letter-spacing: 0.3pt;
+      letter-spacing: 0.3pt;
     }
     .protokoll-separator { border-top: 0.2mm dashed #888 !important; margin: 2mm 0 !important; }
     /* Tageswechsel-Suffix in Druck: schwarz wie Rest, leicht hochgestellt */
@@ -1740,7 +1746,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.14.8';
+  const APP_VERSION = '1.14.9';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -3629,42 +3635,66 @@
     `;
   }
 
+  // Protokoll-Layout: pro Auftrag wird pro Split eine eigene Gruppe erzeugt.
+  // Header: "SAP - SPLIT"  (bei Aufträgen ohne Splits einfach "SAP")
+  // Format pro Zeile: { label, time }  — Label-zuerst-Style wie in MONAmC
+  // Anfahrt   → in der ersten Split-Gruppe
+  // Rückfahrt → in der letzten Split-Gruppe
   function buildProtokollGroups(times) {
-    return state.auftraege.map((a, i) => {
+    const groups = [];
+    state.auftraege.forEach((a, i) => {
       const t = times[i];
       const name = a.name || ('Auftrag ' + (i + 1));
-      const lines = [];
-      if (a.reiseAktiv && a.reiseAE > 0) lines.push({
-        time: minutesToHHMM(t.reiseStart) + '–' + minutesToHHMM(t.workStart),
-        text: 'Anfahrt (' + formatAE(a.reiseAE) + ' AE)'
+      const workEntries = a.workEntries || [];
+      const hasSplits = workEntries.length > 1 || (workEntries[0] && workEntries[0].split !== null);
+      const lastIdx = workEntries.length - 1;
+
+      workEntries.forEach((e, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === lastIdx;
+        const carriesAnfahrt = isFirst && a.reiseAktiv && a.reiseAE > 0;
+        const carriesRueck = isLast && a.rueckAktiv && a.rueckAE > 0;
+        const hasArbeit = e.ae > 0;
+
+        // Komplett leere Splits ueberspringen (keine Arbeit, keine An-/Rückfahrt-Traegerschaft)
+        if (!hasArbeit && !carriesAnfahrt && !carriesRueck) return;
+
+        const splitSuffix = hasSplits && e.split !== null ? ' - ' + e.split : '';
+        const groupName = name + splitSuffix;
+        const lines = [];
+
+        if (carriesAnfahrt) {
+          lines.push({
+            label: 'Anfahrt',
+            time: minutesToHHMM(t.reiseStart) + '–' + minutesToHHMM(t.workStart)
+          });
+        }
+        if (hasArbeit) {
+          const et = t.workTimes[idx];
+          lines.push({
+            label: 'Arbeit',
+            time: minutesToHHMM(et.start) + '–' + minutesToHHMM(et.end)
+          });
+        }
+        if (carriesRueck) {
+          const isHeimfahrt = i === state.auftraege.length - 1;
+          lines.push({
+            label: isHeimfahrt ? 'Heimfahrt' : 'Rückfahrt',
+            time: minutesToHHMM(t.rueckStart) + '–' + minutesToHHMM(t.rueckEnd)
+          });
+        }
+
+        if (lines.length > 0) groups.push({ name: groupName, lines });
       });
-      a.workEntries.forEach((e, idx) => {
-        if (e.ae <= 0) return;
-        const et = t.workTimes[idx];
-        const splitLabel = e.split !== null ? 'Split ' + e.split + ' Arbeit' : 'Arbeit';
-        lines.push({
-          time: minutesToHHMM(et.start) + '–' + minutesToHHMM(et.end),
-          text: splitLabel + ' (' + formatAE(e.ae) + ' AE)'
-        });
-      });
-      if (a.rueckAktiv && a.rueckAE > 0) {
-        const beschr = i < state.auftraege.length - 1
-          ? 'Fahrt zu ' + (state.auftraege[i + 1].name || 'Auftrag ' + (i + 2))
-          : 'Heimfahrt';
-        lines.push({
-          time: minutesToHHMM(t.rueckStart) + '–' + minutesToHHMM(t.rueckEnd),
-          text: beschr + ' (' + formatAE(a.rueckAE) + ' AE)'
-        });
-      }
-      return { name, lines };
     });
+    return groups;
   }
 
   function renderProtokoll(times) {
     const groups = buildProtokollGroups(times);
     const html = groups.map((g, idx) => {
       const linesHtml = g.lines.map(l =>
-        `<div class="protokoll-line"><span class="protokoll-time">${timeWithDaySup(l.time)}</span><span class="protokoll-text">${escapeHtml(l.text)}</span></div>`
+        `<div class="protokoll-line"><span class="protokoll-label">${escapeHtml(l.label)}</span><span class="protokoll-time">${timeWithDaySup(l.time)}</span></div>`
       ).join('');
       const sep = idx < groups.length - 1 ? '<hr class="protokoll-separator">' : '';
       return `<div class="protokoll-group"><div class="protokoll-group-header">${escapeHtml(g.name)}</div>${linesHtml}</div>${sep}`;
@@ -3697,9 +3727,9 @@
     out.push('Ende:  ' + minutesToHHMM(endMin));
     out.push('');
     groups.forEach((g, idx) => {
-      out.push('▸ ' + g.name);
-      g.lines.forEach(l => out.push('   ' + l.time + '   ' + l.text));
-      if (idx < groups.length - 1) out.push('   ----------------------------------');
+      out.push(g.name);
+      g.lines.forEach(l => out.push('  ' + (l.label + ':').padEnd(12) + l.time));
+      if (idx < groups.length - 1) out.push('');
     });
     out.push('');
     out.push('====================================');
