@@ -1726,7 +1726,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.14.4';
+  const APP_VERSION = '1.14.5';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2341,11 +2341,68 @@
     runFahrtenbuchOcr(file);
   }
 
+  // Bild-Vorverarbeitung für besseres OCR bei hellgrauem Text (Mobile Fahrtenbuch):
+  // - 2× Upscaling für bessere Schrifterkennung
+  // - Konvertierung zu Grayscale (BT.601-Gewichtung)
+  // - Linearer Kontrast-Stretch: heller Text wird dunkler, Hintergrund bleibt weiß
+  // Alles client-seitig per Canvas, kein externer Aufruf.
+  function preprocessFahrtenbuchImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        try {
+          const scale = 2;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.floor(img.width * scale));
+          canvas.height = Math.max(1, Math.floor(img.height * scale));
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { URL.revokeObjectURL(objUrl); reject(new Error('Canvas-Kontext nicht verfügbar')); return; }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(objUrl);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            // Grayscale (BT.601)
+            const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+            // Kontrast-Stretch: in=120 → 0, in=222 → 255 (lineare Skalierung)
+            let v = (gray - 120) * 2.5;
+            if (v < 0) v = 0;
+            else if (v > 255) v = 255;
+            data[i] = data[i + 1] = data[i + 2] = v;
+          }
+          ctx.putImageData(imageData, 0, 0);
+
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Bild konnte nicht konvertiert werden'));
+          }, 'image/png');
+        } catch (e) {
+          URL.revokeObjectURL(objUrl);
+          reject(e);
+        }
+      };
+      img.onerror = () => { URL.revokeObjectURL(objUrl); reject(new Error('Bild konnte nicht geladen werden')); };
+      img.src = objUrl;
+    });
+  }
+
   async function runFahrtenbuchOcr(file) {
     let blob = file;
     try {
-      const Tesseract = await loadTesseract();
       const progressEl = document.getElementById('fahrtenbuchProgress');
+      if (progressEl) progressEl.textContent = 'Bild wird optimiert (Kontrast + Upscaling) …';
+      try {
+        blob = await preprocessFahrtenbuchImage(file);
+      } catch (preErr) {
+        // Pre-Processing-Fehler ignorieren, mit Originalbild weitermachen
+        console.warn('Vorverarbeitung fehlgeschlagen, nutze Originalbild:', preErr);
+        blob = file;
+      }
+      const Tesseract = await loadTesseract();
       if (progressEl) progressEl.textContent = 'Bild wird gelesen …';
       const { data } = await Tesseract.recognize(blob, 'deu', {
         logger: m => {
