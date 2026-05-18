@@ -831,6 +831,25 @@
     margin-top: 4px;
     font-weight: 700;
   }
+  .fahrtenbuch-preview-row.changed {
+    background: rgba(184, 134, 11, 0.18);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin: 1px -4px;
+  }
+  .fahrtenbuch-preview-row.changed small {
+    color: #6B4F00;
+    font-weight: 600;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+  body[data-theme="dark"] .fahrtenbuch-preview-row.changed { background: rgba(184, 134, 11, 0.22); }
+  body[data-theme="dark"] .fahrtenbuch-preview-row.changed small { color: #FFD27A; }
+  .fahrtenbuch-preview-row.changed.total {
+    background: rgba(184, 134, 11, 0.28);
+    border-top-color: #B8860B;
+  }
+  body[data-theme="dark"] .fahrtenbuch-preview-row.changed.total { background: rgba(184, 134, 11, 0.32); }
   .fahrtenbuch-warning {
     background: rgba(184, 134, 11, 0.15);
     color: #6B4F00;
@@ -1659,7 +1678,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.14.0';
+  const APP_VERSION = '1.14.1';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2467,28 +2486,56 @@
     }).join('');
 
     const preview = computeFahrtenbuchPreview(trips);
+
+    // Diff-Row mit Konsistenz-Check: hebt hervor wenn vorhandener Wert überschrieben würde
+    const diffRow = (label, current, newVal, isTotal) => {
+      const totalCls = isTotal ? ' total' : '';
+      const diff = newVal - current;
+      const noChange = Math.abs(diff) < 0.05;
+      const noPrior = current < 0.05;  // Erst-Import (kein bisheriger Wert)
+      if (noChange) {
+        return '<div class="fahrtenbuch-preview-row' + totalCls + '"><span>' + label + '</span><span>' + formatAE(newVal) + ' AE</span></div>';
+      }
+      if (noPrior) {
+        // Kein bisheriger Wert → keine Hervorhebung, einfache Anzeige
+        return '<div class="fahrtenbuch-preview-row' + totalCls + '"><span>' + label + '</span><span>' + formatAE(newVal) + ' AE</span></div>';
+      }
+      // Echte Überschreibung — Hervorhebung
+      const sign = diff > 0 ? '+' : '−';
+      const diffStr = sign + formatAE(Math.abs(diff));
+      return '<div class="fahrtenbuch-preview-row changed' + totalCls + '"><span>' + label + '</span><span>' + formatAE(current) + ' → <strong>' + formatAE(newVal) + ' AE</strong> <small>(' + diffStr + ')</small></span></div>';
+    };
+
     let previewHtml = '<div class="fahrtenbuch-preview-title">Vorschau pro Auftrag</div>';
     let anyValid = false;
+    let anyOverwrite = false;
     for (let i = 1; i <= auftragsCount; i++) {
       const p = preview[i];
       const name = state.auftraege[i - 1].name || ('Auftrag ' + i);
-      if (!p || (p.reiseAE === 0 && p.arbeitAE === 0 && p.rueckAE === 0)) {
+      if (!p || (p.new.reiseAE === 0 && p.new.arbeitAE === 0 && p.new.rueckAE === 0)) {
         previewHtml += '<div class="fahrtenbuch-preview-row" style="opacity:0.55;"><span>' + escapeHtml(name) + '</span><span>— nichts zugeordnet —</span></div>';
         continue;
       }
       anyValid = true;
-      previewHtml += '<div class="fahrtenbuch-preview-row"><span>' + escapeHtml(name) + ' · Reise</span><span>' + formatAE(p.reiseAE) + ' AE</span></div>';
-      previewHtml += '<div class="fahrtenbuch-preview-row"><span>' + escapeHtml(name) + ' · Arbeit</span><span>' + formatAE(p.arbeitAE) + ' AE</span></div>';
-      previewHtml += '<div class="fahrtenbuch-preview-row"><span>' + escapeHtml(name) + ' · Rück</span><span>' + formatAE(p.rueckAE) + ' AE</span></div>';
-      previewHtml += '<div class="fahrtenbuch-preview-row total"><span>Gesamt</span><span>' + formatAE(p.reiseAE + p.arbeitAE + p.rueckAE) + ' AE</span></div>';
+      const currentTotal = p.current.reiseAE + p.current.arbeitAE + p.current.rueckAE;
+      const newTotal = p.new.reiseAE + p.new.arbeitAE + p.new.rueckAE;
+      if (currentTotal > 0.05 && Math.abs(newTotal - currentTotal) > 0.05) anyOverwrite = true;
+      previewHtml += diffRow(escapeHtml(name) + ' · Reise', p.current.reiseAE, p.new.reiseAE, false);
+      previewHtml += diffRow(escapeHtml(name) + ' · Arbeit', p.current.arbeitAE, p.new.arbeitAE, false);
+      previewHtml += diffRow(escapeHtml(name) + ' · Rück', p.current.rueckAE, p.new.rueckAE, false);
+      previewHtml += diffRow('Gesamt', currentTotal, newTotal, true);
     }
     const warnings = validateFahrtenbuchMapping(trips);
     const warningsHtml = warnings.map(w => '<div class="fahrtenbuch-warning">⚠ ' + escapeHtml(w) + '</div>').join('');
+    const overwriteNotice = anyOverwrite
+      ? '<div class="fahrtenbuch-warning">⚠ <strong>Konsistenz-Check:</strong> Einige bereits eingetragene AE-Werte werden überschrieben (gelb markiert).</div>'
+      : '';
 
     document.getElementById('fahrtenbuchBody').innerHTML =
       '<p style="font-size:13px;margin-bottom:6px;"><strong>' + trips.length + '</strong> Fahrt' + (trips.length === 1 ? '' : 'en') + ' erkannt. Ordne jeder Fahrt eine Rolle zu:</p>' +
       '<div class="fahrtenbuch-trip-list">' + tripRows + '</div>' +
       warningsHtml +
+      overwriteNotice +
       '<div class="fahrtenbuch-preview">' + previewHtml + '</div>' +
       '<p class="ocr-discard-note">🔒 Bild wurde bereits verworfen.</p>';
     document.getElementById('fahrtenbuchActions').innerHTML =
@@ -2522,16 +2569,25 @@
     for (const aIdxStr of Object.keys(byAuftrag)) {
       const aIdx = parseInt(aIdxStr, 10);
       const grp = byAuftrag[aIdx];
+      const a = state.auftraege[aIdx - 1];
       const reiseAE = grp.anfahrt ? minToAE(grp.anfahrt.durationMin) : 0;
       const rueckAE = grp.rueck ? minToAE(grp.rueck.durationMin) : 0;
-      // Arbeit = (Rück-Beginn) − (Anfahrt-Ende), abzüglich Innen-Fahrten? NEIN:
-      // Innen-Fahrten zählen ebenfalls zur Arbeit. Also einfach: Arbeit = Rück.startMin − Anfahrt.endMin.
+      // Arbeit = Rück.startMin − Anfahrt.endMin (Innen-Fahrten zählen mit)
       let arbeitAE = 0;
       if (grp.anfahrt && grp.rueck) {
         const arbeitMin = grp.rueck.startMin - grp.anfahrt.endMin;
         arbeitAE = arbeitMin > 0 ? minToAE(arbeitMin) : 0;
       }
-      result[aIdx] = { reiseAE, arbeitAE, rueckAE };
+      // Aktuelle Werte aus dem State für Konsistenz-Vergleich
+      const currentReise = (a && a.reiseAktiv) ? (a.reiseAE || 0) : 0;
+      const currentRueck = (a && a.rueckAktiv) ? (a.rueckAE || 0) : 0;
+      const currentArbeit = (a && a.workEntries)
+        ? a.workEntries.reduce((sum, e) => sum + (e.ae || 0), 0)
+        : 0;
+      result[aIdx] = {
+        new: { reiseAE, arbeitAE, rueckAE },
+        current: { reiseAE: currentReise, arbeitAE: currentArbeit, rueckAE: currentRueck }
+      };
     }
     return result;
   }
@@ -2569,17 +2625,15 @@
     let touched = 0;
     for (const aIdxStr of Object.keys(preview)) {
       const aIdx = parseInt(aIdxStr, 10);
-      const p = preview[aIdx];
+      const p = preview[aIdx].new;
       const a = state.auftraege[aIdx - 1];
       if (!a) continue;
       if (p.reiseAE > 0) { a.reiseAktiv = true; a.reiseAE = p.reiseAE; }
       if (p.rueckAE > 0) { a.rueckAktiv = true; a.rueckAE = p.rueckAE; }
       if (p.arbeitAE > 0) {
-        // Bei Splits: Gesamt-Arbeit in erste Split-Zeile schreiben + Warnung
-        // (User verteilt manuell auf Splits, wie besprochen)
+        // Bei Splits: Gesamt-Arbeit in erste Split-Zeile schreiben (User verteilt manuell)
         if (a.workEntries && a.workEntries.length > 0) {
           a.workEntries[0].ae = p.arbeitAE;
-          // Weitere Splits unverändert lassen (User verteilt nach)
         }
       }
       touched++;
