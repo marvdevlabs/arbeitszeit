@@ -1551,7 +1551,7 @@
       <strong>Namen anpassen:</strong> Auftrags-Titel anklicken.
       <strong>Reise/Rückzeit:</strong> über Schalter aktivieren.
       <strong>Abzug Werktag:</strong> 30 min Anfahrt + 30 min Abfahrt + Pause (0 / 30 / 45 min je nach Arbeitszeit).
-      Bei <strong>Bereitschaft, Wochenende oder Feiertag</strong>: kein An-/Abfahrt-Abzug — nur 30 min Pause bei Brutto über 6 h.
+      Bei <strong>Bereitschaft an Wochenende/Feiertag</strong>: kein An-/Abfahrt-Abzug — nur 30 min Pause bei Brutto über 6 h. Bereitschaft an einem Werktag = normaler Abzug.
       Plus ab 7:48h tatsächlicher Arbeitszeit.
     </div>
     <button class="btn btn-outline fahrtenbuch-import-btn" onclick="openFahrtenbuchModal()">
@@ -1791,7 +1791,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.18.2';
+  const APP_VERSION = '1.18.3';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -1901,10 +1901,11 @@
   function isSpecialDay(dateISO, bundesland) {
     return isWeekend(dateISO) || !!getHolidayName(dateISO, bundesland);
   }
-  // Spezialfall: bei Bereitschaft, Wochenende oder Feiertag entfaellt
+  // Spezialfall: NUR an Wochenenden/Feiertagen MIT Bereitschaft entfaellt
   // der An-/Abfahrt-Abzug komplett und es gilt eine vereinfachte Pause-Regel.
+  // Bereitschaft an einem normalen Werktag = NORMALER Abzug (60 min + Pause).
   function isSpecialPauseCase() {
-    return !!state.bereitschaft || isSpecialDay(state.date, state.bundesland);
+    return !!state.bereitschaft && isSpecialDay(state.date, state.bundesland);
   }
   function getFixAbzug() {
     return isSpecialPauseCase() ? 0 : FIX_ABZUG_MIN;
@@ -3544,8 +3545,8 @@
     let html = `<span><strong>${weekday}</strong>, ${formatDateDE(state.date)}</span>`;
     if (holiday) html += ` <span class="tag tag-holiday">${holiday}</span>`;
     else if (weekend) html += ` <span class="tag tag-weekend">Wochenende</span>`;
-    // An-/Abfahrt entfaellt bei: Bereitschaft ODER Wochenende ODER Feiertag
-    if (state.bereitschaft || holiday || weekend) {
+    // An-/Abfahrt entfaellt NUR bei: Bereitschaft + Wochenende ODER Bereitschaft + Feiertag
+    if (state.bereitschaft && (holiday || weekend)) {
       html += ` <span class="tag tag-info">ohne An-/Abfahrt-Abzug</span>`;
     }
     info.innerHTML = html;
@@ -3982,11 +3983,9 @@
     if (fixAbzug > 0) {
       out.push('Abzug:       ' + fixAbzug + ' min An-/Abfahrt + ' + pauseMin + ' min Pause');
     } else {
-      const reasons = [];
-      if (state.bereitschaft) reasons.push('Bereitschaft');
-      if (holiday) reasons.push(holiday);
-      else if (isWeekend(state.date)) reasons.push('Wochenende');
-      out.push('Abzug:       ' + pauseMin + ' min Pause   (An-/Abfahrt entfällt: ' + (reasons.join(', ') || '—') + ')');
+      // fixAbzug=0 bedeutet jetzt: Bereitschaft AN Wochenende/Feiertag
+      const tag = holiday || (isWeekend(state.date) ? 'Wochenende' : '');
+      out.push('Abzug:       ' + pauseMin + ' min Pause   (An-/Abfahrt entfällt: Bereitschaft am ' + tag + ')');
     }
     out.push('10h-Limit:   ' + fmtDuration(h10Check) + ' / 10h 00min' + (h10Check > LIMIT10H_MIN ? '   ⛔ ÜBERSCHRITTEN' : (fixAbzug > 0 ? '   (inkl. An-/Abfahrt)' : '')));
     out.push('');
