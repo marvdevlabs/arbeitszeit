@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -124,6 +124,13 @@
   body.retro-mode input, body.retro-mode select, body.retro-mode .btn {
     transition: background 0.4s, color 0.4s, border-color 0.4s, box-shadow 0.4s;
   }
+  /* Zoom-Sperre: kein Double-Tap-Zoom, kein Pinch-Zoom — nur Scrollen erlaubt.
+     Viewport-Meta deckt Android/Chrome ab, touch-action den iOS-Safari-Fall. */
+  html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; }
+  /* Alle Eingabefelder mindestens 16px — verhindert iOS-Auto-Zoom beim Fokus.
+     Visuell wirkt's nicht zu gross weil Padding/Hoehe getrennt gesteuert wird. */
+  input, textarea, select { font-size: 16px; }
+
   body {
     --pad: 12px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
@@ -787,7 +794,8 @@
     width: 100%;
     min-height: 56px;
     padding: 8px 10px;
-    font-size: 13px;
+    font-size: 16px;   /* iOS-Zoom-Schwelle */
+    line-height: 1.35;
     border: 1.5px solid var(--border-input);
     border-radius: 6px;
     background: var(--bg-input);
@@ -919,7 +927,8 @@
     width: 100%;
     min-height: 120px;
     padding: 10px 12px;
-    font-size: 14px;
+    font-size: 16px;   /* iOS-Zoom-Schwelle */
+    line-height: 1.35;
     border: 1.5px solid var(--border-input);
     border-radius: 8px;
     background: var(--bg-input);
@@ -1096,7 +1105,7 @@
   }
   .fahrtenbuch-trip-edit input {
     padding: 5px 8px;
-    font-size: 13px;
+    font-size: 16px;   /* iOS-Zoom-Schwelle */
     border: 1.5px solid var(--border-input);
     border-radius: 6px;
     background: var(--bg-input);
@@ -2110,7 +2119,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const APP_VERSION = '1.17.0';
+  const APP_VERSION = '1.17.1';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
