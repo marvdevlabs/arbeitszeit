@@ -1431,40 +1431,6 @@
     .p-protokoll .p-line .val { font-variant-numeric: tabular-nums; }
     .p-protokoll .day-sup { font-size: 0.65em; vertical-align: super; color: #EC0016; }
 
-    /* === MONA-Schema === */
-    .p-mona {}
-    .p-mona-card {
-      border: 0.3mm solid #999;
-      border-left: 1mm solid #EC0016;
-      border-radius: 1.5mm;
-      padding: 3mm 4mm;
-      margin-bottom: 3mm;
-      break-inside: avoid; page-break-inside: avoid;
-    }
-    .p-mona-card-head {
-      display: flex; justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 1.5mm;
-      padding-bottom: 1mm;
-      border-bottom: 0.2mm dashed #BBB;
-    }
-    .p-mona-sap { font-weight: 800; font-size: 11pt; }
-    .p-mona-card-num { font-size: 8pt; color: #888; }
-    .p-mona-status {
-      font-size: 9pt; color: #555;
-      margin-bottom: 1.5mm;
-    }
-    .p-mona-status strong { color: #000; }
-    .p-mona-fields {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.8mm 4mm;
-      font-size: 10pt;
-    }
-    .p-mona-fields .lbl { color: #555; }
-    .p-mona-fields .val { font-variant-numeric: tabular-nums; font-weight: 700; }
-    .p-mona-fields .day-sup { font-size: 0.65em; vertical-align: super; color: #EC0016; }
-
     .p-footer {
       margin-top: 6mm; padding-top: 2mm;
       border-top: 0.2mm solid #BBB;
@@ -1825,7 +1791,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.18.1';
+  const APP_VERSION = '1.18.2';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -4034,7 +4000,7 @@
     return out.join('\n');
   }
 
-  /* ===== Druck-Layout (Hochkant, schlicht: Protokoll + MONA-Schema) ===== */
+  /* ===== Druck-Layout (Hochkant, schlicht: nur Protokoll) ===== */
   function buildPrintHtml() {
     const times = calcTimes();
     const { totalReise, totalArbeit, totalRueck, totalAE } = calcTotals();
@@ -4055,21 +4021,6 @@
     if (plusMin === 0) { plusText = 'Soll erreicht'; plusCls = 'plus-met'; }
     else if (plusMin > 0) { plusText = '+' + fmtDuration(plusMin) + ' über Soll'; plusCls = 'plus-pos'; }
     else { plusText = '−' + fmtDuration(-plusMin) + ' bis Soll'; plusCls = 'plus-neg'; }
-
-    // Datum/Zeit fürs MONA-Schema
-    const monaDateTime = (m) => {
-      const dayOffset = Math.floor(m / 1440);
-      const wrapped = ((m % 1440) + 1440) % 1440;
-      const d = new Date(dateObj);
-      d.setDate(d.getDate() + dayOffset);
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const yy = String(d.getFullYear()).slice(-2);
-      const hh = String(Math.floor(wrapped / 60)).padStart(2, '0');
-      const mn = String(wrapped % 60).padStart(2, '0');
-      const sup = dayOffset > 0 ? '<span class="day-sup">+' + dayOffset + '</span>' : '';
-      return dd + '.' + mm + '.' + yy + '  ' + hh + ':' + mn + sup;
-    };
 
     // === Header ===
     let html = '';
@@ -4105,84 +4056,8 @@
     });
     html += '</div>';
 
-    // === MONA-Schema ===
-    html += '<div class="p-section-title">Eingabe in MONAmC</div>';
-    html += '<div class="p-mona">';
-    groups.forEach((g, idx) => {
-      // Felder anhand der Lines bestimmen — Anreise/Arbeitszeit/Rueckreise
-      const anfahrtLine = g.lines.find(l => l.label === 'Anfahrt');
-      const arbeitLines = g.lines.filter(l => l.label === 'Arbeit');
-      const rueckLine = g.lines.find(l => l.label === 'Rückfahrt' || l.label === 'Heimfahrt');
-
-      html += '<div class="p-mona-card">' +
-        '<div class="p-mona-card-head">' +
-          '<span class="p-mona-sap">' + escapeHtml(g.name) + '</span>' +
-          '<span class="p-mona-card-num">' + (idx + 1) + ' / ' + groups.length + '</span>' +
-        '</div>' +
-        '<div class="p-mona-status"><strong>Status:</strong> ☐ Annehmen · ☐ In Anfahrt · ☐ Vor Ort</div>' +
-        '<div class="p-mona-fields">';
-
-      // Anreise
-      if (anfahrtLine) {
-        const [vonStr, bisStr] = anfahrtLine.time.split('–');
-        const vonMin = startMinForLabel(times, g.name, 'Anfahrt', 'start');
-        const bisMin = startMinForLabel(times, g.name, 'Anfahrt', 'end');
-        html += '<span class="lbl">Anreise von:</span><span class="val">' + monaDateTime(vonMin) + '</span>';
-        html += '<span class="lbl">Anreise bis:</span><span class="val">' + monaDateTime(bisMin) + '</span>';
-      }
-      // Arbeitszeit (gesamt: erste Arbeit-Start, letzte Arbeit-Ende)
-      if (arbeitLines.length > 0) {
-        const arbVon = startMinForLabel(times, g.name, 'Arbeit', 'start');
-        const arbBis = startMinForLabel(times, g.name, 'Arbeit', 'end');
-        html += '<span class="lbl">Arbeitszeit von:</span><span class="val">' + monaDateTime(arbVon) + '</span>';
-        html += '<span class="lbl">Arbeitszeit bis:</span><span class="val">' + monaDateTime(arbBis) + '</span>';
-      }
-      // Rückreise
-      if (rueckLine) {
-        const vonMin = startMinForLabel(times, g.name, rueckLine.label, 'start');
-        const bisMin = startMinForLabel(times, g.name, rueckLine.label, 'end');
-        html += '<span class="lbl">Rückreise von:</span><span class="val">' + monaDateTime(vonMin) + '</span>';
-        html += '<span class="lbl">Rückreise bis:</span><span class="val">' + monaDateTime(bisMin) + '</span>';
-      }
-
-      html += '</div></div>';
-    });
-    html += '</div>';
-
     html += '<div class="p-footer">Gedruckt am ' + new Date().toLocaleDateString('de-DE') + ' · marvdevlabs/arbeitszeit · v' + APP_VERSION + '</div>';
     return html;
-  }
-
-  // Helper: aus den Times-Daten den Start/End-Minuten-Wert fuer ein bestimmtes
-  // Auftrag+Label finden. Brauchen wir um Datum + Uhrzeit fuers MONA-Schema
-  // zu rendern (vor allem fuer Tageswechsel-Detection).
-  function startMinForLabel(times, groupName, label, kind) {
-    // groupName ist "SAP - SPLIT" oder "SAP" — wir matchen via Auftrag-Index
-    let auftragIdx = -1;
-    let splitVal = null;
-    for (let i = 0; i < state.auftraege.length; i++) {
-      const a = state.auftraege[i];
-      if (groupName === a.name) { auftragIdx = i; break; }
-      if (groupName.startsWith(a.name + ' - ')) {
-        auftragIdx = i;
-        splitVal = parseInt(groupName.slice(a.name.length + 3), 10);
-        break;
-      }
-    }
-    if (auftragIdx < 0) return 0;
-    const t = times[auftragIdx];
-    if (label === 'Anfahrt') return kind === 'start' ? t.reiseStart : t.workStart;
-    if (label === 'Rückfahrt' || label === 'Heimfahrt') return kind === 'start' ? t.rueckStart : t.rueckEnd;
-    if (label === 'Arbeit') {
-      const a = state.auftraege[auftragIdx];
-      if (splitVal !== null) {
-        const wIdx = a.workEntries.findIndex(e => e.split === splitVal);
-        if (wIdx >= 0) return kind === 'start' ? t.workTimes[wIdx].start : t.workTimes[wIdx].end;
-      } else {
-        return kind === 'start' ? t.workStart : t.workEnd;
-      }
-    }
-    return 0;
   }
 
   // Hook: vor jedem Druck die Print-Area befüllen
