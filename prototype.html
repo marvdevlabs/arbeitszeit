@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<title>Arbeitszeit · Prototyp v0.1</title>
+<style>
+  :root {
+    /* iOS-style design tokens */
+    --bg-app: #F2F2F7;
+    --bg-card: #FFFFFF;
+    --bg-grouped: #F2F2F7;
+    --bg-tabbar: rgba(249, 249, 249, 0.92);
+
+    --text-primary: #1C1C1E;
+    --text-secondary: #6C6C70;
+    --text-tertiary: #9C9CA0;
+    --separator: rgba(60, 60, 67, 0.12);
+    --separator-strong: rgba(60, 60, 67, 0.20);
+
+    --accent: #EC0016;        /* DB-rot, gezielt */
+    --accent-soft: rgba(236, 0, 22, 0.10);
+    --green: #34C759;
+    --orange: #FF9500;
+    --red: #FF3B30;
+    --blue: #007AFF;
+
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-app: #000000;
+      --bg-card: #1C1C1E;
+      --bg-grouped: #000000;
+      --bg-tabbar: rgba(30, 30, 30, 0.92);
+      --text-primary: #FFFFFF;
+      --text-secondary: #98989F;
+      --text-tertiary: #6C6C70;
+      --separator: rgba(84, 84, 88, 0.40);
+      --separator-strong: rgba(84, 84, 88, 0.60);
+      --accent-soft: rgba(236, 0, 22, 0.18);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overscroll-behavior-y: contain;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-app);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    font-size: 17px;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+  button, input, select, textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  /* ===== App Shell ===== */
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: var(--safe-top);
+  }
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 100px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.18s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== Large Titles (iOS-style) ===== */
+  .large-title {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    padding: 16px 0 4px;
+    line-height: 1.1;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    padding-bottom: 14px;
+  }
+
+  /* ===== Section Headers ===== */
+  .section-header {
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    padding: 24px 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-header .action {
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    cursor: pointer;
+  }
+
+  /* ===== Cards (iOS Grouped Style) ===== */
+  .card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 8px;
+  }
+  .card-large { padding: 24px 20px; }
+
+  /* List card with separators between rows */
+  .list-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    min-height: 44px;
+    position: relative;
+    cursor: pointer;
+  }
+  .list-row + .list-row::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 16px; right: 0;
+    height: 0.5px;
+    background: var(--separator);
+  }
+  .list-row .label { font-size: 17px; color: var(--text-primary); }
+  .list-row .value {
+    font-size: 17px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .list-row .chevron {
+    color: var(--text-tertiary);
+    font-size: 17px;
+    margin-left: 2px;
+  }
+  .list-row.with-icon { gap: 12px; }
+  .list-row .icon {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    background: var(--accent-soft);
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+  .list-row .icon svg { width: 18px; height: 18px; }
+
+  /* ===== Heute: Hero Status ===== */
+  .hero {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 24px 20px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .hero-time {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .progress {
+    height: 8px;
+    background: var(--separator);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #FF4D4D);
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+  .hero-status {
+    font-size: 15px;
+    color: var(--text-secondary);
+  }
+  .hero-status strong { color: var(--text-primary); font-weight: 600; }
+
+  /* ===== Stat-Row (drei kleine Karten nebeneinander) ===== */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+
+  /* ===== Auftrag-Card ===== */
+  .auftrag-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .auftrag-card:active { transform: scale(0.985); }
+  .auftrag-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .auftrag-sap {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .auftrag-time {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .auftrag-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .auftrag-ae {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .auftrag-splits {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .split-pill {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 8px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Floating Add Card */
+  .add-card {
+    background: transparent;
+    border: 1.5px dashed var(--separator-strong);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    text-align: center;
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .add-card:active { background: var(--accent-soft); }
+
+  /* ===== Action Buttons ===== */
+  .action-btn {
+    background: var(--bg-card);
+    border: none;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    width: 100%;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .action-btn:active { background: var(--separator); }
+  .action-btn.primary { color: var(--accent); font-weight: 600; }
+  .action-btn.danger  { color: var(--red);    font-weight: 600; }
+  .action-btn .icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--accent-soft);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .action-btn.danger .icon { background: rgba(255, 59, 48, 0.14); color: var(--red); }
+  .action-btn .icon svg { width: 16px; height: 16px; }
+
+  /* ===== Bottom Tab Bar ===== */
+  .tabbar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg-tabbar);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-top: 0.5px solid var(--separator);
+    padding-bottom: var(--safe-bottom);
+    z-index: 100;
+  }
+  .tabbar-inner {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    padding: 6px 0 4px;
+  }
+  .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 4px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+  }
+  .tab svg { width: 26px; height: 26px; }
+  .tab.active { color: var(--accent); }
+
+  /* ===== Sheet (Modal von unten) ===== */
+  .sheet-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg-card);
+    border-radius: 16px 16px 0 0;
+    z-index: 201;
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    padding-bottom: calc(20px + var(--safe-bottom));
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.18);
+  }
+  .sheet.show { transform: translateY(0); }
+  .sheet-handle {
+    width: 36px; height: 5px;
+    background: var(--separator-strong);
+    border-radius: 100px;
+    margin: 8px auto 0;
+  }
+  .sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 12px;
+  }
+  .sheet-title { font-size: 17px; font-weight: 600; }
+  .sheet-close, .sheet-done {
+    background: none; border: none;
+    font-size: 17px; cursor: pointer;
+    color: var(--accent);
+    font-weight: 600;
+    padding: 0;
+  }
+  .sheet-close { color: var(--text-secondary); font-weight: 400; }
+  .sheet-content { padding: 0 20px 8px; }
+
+  /* Form-Inputs (iOS-style) */
+  .form-group { margin-bottom: 8px; }
+  .form-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    padding: 8px 16px 6px;
+  }
+  .input {
+    width: 100%;
+    background: var(--bg-card);
+    border: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 17px;
+    color: var(--text-primary);
+    outline: none;
+  }
+  body[data-theme="dark"] .input { background: rgba(118, 118, 128, 0.16); }
+  @media (prefers-color-scheme: dark) {
+    .input { background: rgba(118, 118, 128, 0.16); }
+  }
+  .input-group .input { background: var(--bg-card); }
+  .input-group .input + .input::before {
+    content: ''; display: block; height: 0.5px; background: var(--separator);
+  }
+
+  /* Segmented Control (iOS-style) */
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(120, 120, 128, 0.16);
+    border-radius: 9px;
+    padding: 2px;
+    margin: 8px 0 16px;
+  }
+  .segmented button {
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+  }
+  .segmented button.active {
+    background: var(--bg-card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.04);
+  }
+
+  /* History Item */
+  .history-group-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 20px 4px 8px;
+  }
+  .history-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .history-main { flex: 1; min-width: 0; }
+  .history-date {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .history-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .history-tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+  }
+  .history-tag.weekend { background: rgba(255, 149, 0, 0.15); color: var(--orange); }
+  .history-tag.holiday { background: rgba(255, 149, 0, 0.18); color: var(--orange); }
+  .history-chev { color: var(--text-tertiary); font-size: 14px; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-secondary);
+  }
+  .empty-icon {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: var(--accent-soft);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .empty-icon svg { width: 32px; height: 32px; }
+  .empty h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .empty p { font-size: 15px; line-height: 1.4; max-width: 280px; margin: 0 auto; }
+
+  /* Version footer */
+  .version-footer {
+    text-align: center;
+    padding: 32px 0 16px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  /* Prototyp-Banner */
+  .proto-banner {
+    background: linear-gradient(135deg, #5856D6, #007AFF);
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .proto-banner a {
+    color: white;
+    text-decoration: underline;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="proto-banner">
+  PROTOTYP v0.1 · Apple-Hybrid-Redesign
+  <a href="index.html">← zur echten App</a>
+</div>
+
+<div class="app">
+  <div class="content">
+
+    <!-- ========= HEUTE PAGE ========= -->
+    <div class="page active" id="page-heute">
+      <h1 class="large-title">Heute</h1>
+      <div class="subtitle" id="heute-subtitle">Sonntag, 20. Mai 2026 · Bereitschaft</div>
+
+      <div class="hero">
+        <div class="hero-time">6h 30min</div>
+        <div class="hero-label">Arbeit netto</div>
+        <div class="progress">
+          <div class="progress-fill" style="width: 83%"></div>
+        </div>
+        <div class="hero-status">noch <strong>1h 18min</strong> bis Soll</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-value">39,0</div>
+          <div class="stat-label">AE total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">30 min</div>
+          <div class="stat-label">Pause</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">7:30h</div>
+          <div class="stat-label">Brutto</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        Aufträge
+        <span class="action" onclick="openSheet('sheet-auftrag')">+ Hinzufügen</span>
+      </div>
+
+      <div class="auftrag-card" onclick="openSheet('sheet-auftrag')">
+        <div class="auftrag-header">
+          <div class="auftrag-sap">508601100</div>
+          <div class="auftrag-time">09:00 – 13:00</div>
+        </div>
+        <div class="auftrag-meta">
+          <span class="auftrag-ae">21,0 AE</span>
+          <span class="auftrag-splits">
+            <span class="split-pill">10</span>
+            <span class="split-pill">20</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="auftrag-card" onclick="openSheet('sheet-auftrag')">
+        <div class="auftrag-header">
+          <div class="auftrag-sap">508601101</div>
+          <div class="auftrag-time">13:30 – 16:30</div>
+        </div>
+        <div class="auftrag-meta">
+          <span class="auftrag-ae">18,0 AE</span>
+          <span class="auftrag-splits">
+            <span class="split-pill">10</span>
+            <span class="split-pill">20</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="add-card" onclick="openSheet('sheet-auftrag')">+ Auftrag hinzufügen</div>
+
+      <div class="section-header">Tag</div>
+      <div class="list-card">
+        <div class="list-row" onclick="openSheet('sheet-tag')">
+          <div class="label">Datum</div>
+          <div class="value">Sonntag, 20.05.<span class="chevron">›</span></div>
+        </div>
+        <div class="list-row" onclick="openSheet('sheet-tag')">
+          <div class="label">Startzeit</div>
+          <div class="value">09:00<span class="chevron">›</span></div>
+        </div>
+        <div class="list-row" onclick="openSheet('sheet-tag')">
+          <div class="label">Bereitschaft</div>
+          <div class="value">Ja<span class="chevron">›</span></div>
+        </div>
+        <div class="list-row" onclick="goToTab('mehr')">
+          <div class="label">Bundesland</div>
+          <div class="value">NRW<span class="chevron">›</span></div>
+        </div>
+      </div>
+
+      <div class="section-header">Aktionen</div>
+      <button class="action-btn primary">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+        Protokoll kopieren
+      </button>
+      <button class="action-btn">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>
+        Drucken
+      </button>
+      <button class="action-btn danger" onclick="openSheet('sheet-reset')">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6-2.3L3 16"/><polyline points="3 21 3 16 8 16"/></svg></span>
+        Neuer Tag starten
+      </button>
+    </div>
+
+    <!-- ========= VERLAUF PAGE ========= -->
+    <div class="page" id="page-verlauf">
+      <h1 class="large-title">Verlauf</h1>
+      <div class="subtitle">Letzte 14 Tage · 8 Einträge</div>
+
+      <div class="history-group-label">Diese Woche</div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Samstag, 19.05. <span class="history-tag weekend">Wochenende</span></div>
+          <div class="history-sub">2 Aufträge · 51,0 AE · 8h 30min</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Freitag, 18.05.</div>
+          <div class="history-sub">3 Aufträge · 47,0 AE · 7h 50min</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Donnerstag, 17.05. <span class="history-tag">Bereitschaft</span></div>
+          <div class="history-sub">2 Aufträge · 46,8 AE · 7h 48min · ✓ Soll erreicht</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Mittwoch, 16.05.</div>
+          <div class="history-sub">4 Aufträge · 50,2 AE · 8h 22min · +34min Plus</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-group-label">Letzte Woche</div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Sonntag, 12.05. <span class="history-tag holiday">Pfingsten</span></div>
+          <div class="history-sub">1 Auftrag · 36,0 AE · 6h 00min</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Freitag, 10.05.</div>
+          <div class="history-sub">3 Aufträge · 46,8 AE · 7h 48min · ✓ Soll erreicht</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Donnerstag, 09.05.</div>
+          <div class="history-sub">2 Aufträge · 44,0 AE · 7h 20min · −28min</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+
+      <div class="history-group-label">Davor</div>
+
+      <div class="history-card">
+        <div class="history-main">
+          <div class="history-date">Sonntag, 05.05.</div>
+          <div class="history-sub">1 Auftrag · 30,0 AE · 5h 00min</div>
+        </div>
+        <span class="history-chev">›</span>
+      </div>
+    </div>
+
+    <!-- ========= MEHR PAGE ========= -->
+    <div class="page" id="page-mehr">
+      <h1 class="large-title">Mehr</h1>
+      <div class="subtitle">Einstellungen und Daten</div>
+
+      <div class="list-card">
+        <div class="list-row with-icon" onclick="openSheet('sheet-bundesland')">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <div class="label" style="flex:1;">Bundesland</div>
+          <div class="value">NRW<span class="chevron">›</span></div>
+        </div>
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></span>
+          <div class="label" style="flex:1;">Erscheinungsbild</div>
+          <div class="value">Auto<span class="chevron">›</span></div>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+          <div class="label" style="flex:1;">Datensicherung</div>
+          <div class="value"><span class="chevron">›</span></div>
+        </div>
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+          <div class="label" style="flex:1;">Tag teilen (QR)</div>
+          <div class="value"><span class="chevron">›</span></div>
+        </div>
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <div class="label" style="flex:1;">Aus Screenshot importieren</div>
+          <div class="value"><span class="chevron">›</span></div>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <div class="label" style="flex:1;">Über</div>
+          <div class="value"><span class="chevron">›</span></div>
+        </div>
+        <div class="list-row with-icon">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>
+          <div class="label" style="flex:1;">Bahn-Wisdom</div>
+          <div class="value"><span class="chevron">›</span></div>
+        </div>
+      </div>
+
+      <div class="version-footer">
+        Prototyp v0.1 · @marvdevlabs<br>
+        Privates Open-Source-Projekt
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========= BOTTOM TAB BAR ========= -->
+  <nav class="tabbar">
+    <div class="tabbar-inner">
+      <button class="tab active" data-tab="heute">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Heute</span>
+      </button>
+      <button class="tab" data-tab="verlauf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span>Verlauf</span>
+      </button>
+      <button class="tab" data-tab="mehr">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Mehr</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- ========= SHEETS ========= -->
+<div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheets()"></div>
+
+<!-- Auftrag-Sheet -->
+<div class="sheet" id="sheet-auftrag">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <button class="sheet-close" onclick="closeSheets()">Abbrechen</button>
+    <div class="sheet-title">Auftrag</div>
+    <button class="sheet-done" onclick="closeSheets()">Fertig</button>
+  </div>
+  <div class="sheet-content">
+    <div class="form-label">SAP-Nummer</div>
+    <input class="input" type="text" value="508601100" inputmode="numeric">
+
+    <div class="form-label">Zeitraum</div>
+    <div class="list-card">
+      <div class="list-row">
+        <div class="label">Start</div>
+        <div class="value">09:00<span class="chevron">›</span></div>
+      </div>
+      <div class="list-row">
+        <div class="label">Ende</div>
+        <div class="value">13:00<span class="chevron">›</span></div>
+      </div>
+    </div>
+
+    <div class="form-label">Splits</div>
+    <div class="list-card">
+      <div class="list-row">
+        <div class="label">10 · Anfahrt</div>
+        <div class="value">3,0 AE<span class="chevron">›</span></div>
+      </div>
+      <div class="list-row">
+        <div class="label">20 · Arbeit</div>
+        <div class="value">15,0 AE<span class="chevron">›</span></div>
+      </div>
+      <div class="list-row" style="color: var(--accent);">
+        <div class="label">+ Split hinzufügen</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <button class="action-btn danger" onclick="closeSheets()">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg></span>
+        Auftrag löschen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tag-Sheet -->
+<div class="sheet" id="sheet-tag">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <button class="sheet-close" onclick="closeSheets()">Abbrechen</button>
+    <div class="sheet-title">Tag</div>
+    <button class="sheet-done" onclick="closeSheets()">Fertig</button>
+  </div>
+  <div class="sheet-content">
+    <div class="form-label">Datum</div>
+    <input class="input" type="date" value="2026-05-20">
+
+    <div class="form-label">Bereitschaft</div>
+    <div class="segmented">
+      <button>Nein</button>
+      <button class="active">Ja</button>
+    </div>
+
+    <div class="form-label">Startzeit</div>
+    <input class="input" type="time" value="09:00">
+  </div>
+</div>
+
+<!-- Bundesland-Sheet -->
+<div class="sheet" id="sheet-bundesland">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <button class="sheet-close" onclick="closeSheets()">Abbrechen</button>
+    <div class="sheet-title">Bundesland</div>
+    <button class="sheet-done" onclick="closeSheets()">Fertig</button>
+  </div>
+  <div class="sheet-content">
+    <div class="list-card">
+      <div class="list-row"><div class="label">Baden-Württemberg</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Bayern</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Berlin</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Hamburg</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Hessen</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Niedersachsen</div><div class="value"></div></div>
+      <div class="list-row" style="color: var(--accent);">
+        <div class="label">Nordrhein-Westfalen</div>
+        <div class="value" style="color: var(--accent);">✓</div>
+      </div>
+      <div class="list-row"><div class="label">Rheinland-Pfalz</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Saarland</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Sachsen</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Sachsen-Anhalt</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Schleswig-Holstein</div><div class="value"></div></div>
+      <div class="list-row"><div class="label">Thüringen</div><div class="value"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset-Sheet -->
+<div class="sheet" id="sheet-reset">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <button class="sheet-close" onclick="closeSheets()">Abbrechen</button>
+    <div class="sheet-title">Neuer Tag</div>
+    <button class="sheet-done" style="color: var(--red);" onclick="closeSheets()">Bestätigen</button>
+  </div>
+  <div class="sheet-content">
+    <p style="font-size: 15px; line-height: 1.5; color: var(--text-secondary); padding: 8px 4px 16px;">
+      Der aktuelle Tag wird in den Verlauf archiviert und ein neuer Tag startet. Bundesland und Theme bleiben erhalten.
+    </p>
+    <button class="action-btn danger" onclick="closeSheets()">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></span>
+      Ja, neuen Tag starten
+    </button>
+  </div>
+</div>
+
+<script>
+  function goToTab(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tabName));
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => goToTab(t.dataset.tab));
+  });
+
+  function openSheet(id) {
+    document.getElementById('sheet-backdrop').classList.add('show');
+    document.getElementById(id).classList.add('show');
+  }
+  function closeSheets() {
+    document.getElementById('sheet-backdrop').classList.remove('show');
+    document.querySelectorAll('.sheet').forEach(s => s.classList.remove('show'));
+  }
+
+  // Segmented control toggle
+  document.querySelectorAll('.segmented').forEach(seg => {
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        seg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
