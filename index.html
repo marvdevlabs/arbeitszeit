@@ -487,6 +487,46 @@
   .auftrag-times { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
   .auftrag-times strong { color: var(--db-red); font-size: 13px; }
 
+  /* ===== Reorder-Buttons fuer Auftrags-Karten ===== */
+  .auftrag-reorder {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .reorder-btn {
+    width: 28px; height: 20px;
+    background: var(--bg-button-soft);
+    border: 1px solid var(--border-input);
+    border-radius: 5px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.08s;
+    padding: 0;
+    font-family: inherit;
+    user-select: none;
+  }
+  .reorder-btn:hover:not(:disabled) {
+    background: var(--db-red);
+    color: #fff;
+    border-color: var(--db-red);
+  }
+  .reorder-btn:active:not(:disabled) { transform: scale(0.92); }
+  .reorder-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .auftrag-card.just-moved {
+    animation: just-moved-pulse 0.4s ease-out;
+  }
+  @keyframes just-moved-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(236, 0, 22, 0.40); }
+    100% { box-shadow: 0 0 0 12px rgba(236, 0, 22, 0); }
+  }
+
   .time-row {
     display: grid;
     grid-template-columns: 38px 1fr 80px 60px;
@@ -1889,6 +1929,9 @@
       <div class="about-section-title">Kontakt &amp; Feedback</div>
       <p><a href="https://github.com/marvdevlabs/arbeitszeit/issues" target="_blank" rel="noopener">GitHub Issues öffnen →</a></p>
 
+      <div class="about-section-title">App-Tour</div>
+      <p><a href="#" onclick="closeAboutModal(); setTimeout(showOnboarding, 200); return false;">Einführung erneut anzeigen →</a></p>
+
       <div class="about-section-title">Datenschutz</div>
       <p>Diese App speichert alle Daten <strong>ausschließlich lokal</strong> im Browser (LocalStorage). Es werden keine Daten an Server übertragen, keine Cookies gesetzt, keine externen Aufrufe gemacht.</p>
 
@@ -1971,7 +2014,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.20.2';
+  const APP_VERSION = '1.21.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -4176,8 +4219,17 @@
         `;
       }).join('');
 
+      const isFirst = i === 0;
+      const isLast = i === state.auftraege.length - 1;
+      const reorderHtml = state.auftraege.length > 1
+        ? `<div class="auftrag-reorder">
+             <button class="reorder-btn" type="button" onclick="moveAuftrag(${i}, -1)" ${isFirst ? 'disabled' : ''} title="Nach oben" aria-label="Nach oben">▲</button>
+             <button class="reorder-btn" type="button" onclick="moveAuftrag(${i}, 1)" ${isLast ? 'disabled' : ''} title="Nach unten" aria-label="Nach unten">▼</button>
+           </div>`
+        : '';
       card.innerHTML = `
         <div class="auftrag-header">
+          ${reorderHtml}
           <input type="text" class="auftrag-name" value="${escapeHtml(a.name)}"
             placeholder="SAP-Nr. / Auftragsname" onchange="updateName(${i}, this.value)">
           <div class="auftrag-times">Arbeit: <strong>${workStartStr}–${workEndStr}</strong></div>
@@ -4224,6 +4276,26 @@
   }
 
   function updateName(i, value) { state.auftraege[i].name = value.trim() || ('Auftrag ' + (i + 1)); renderAuftraege(); saveState(); }
+  function moveAuftrag(i, direction) {
+    const newIdx = i + direction;
+    if (newIdx < 0 || newIdx >= state.auftraege.length) return;
+    // auftraege und sapNumbers sind parallele Arrays — beide synchron umsortieren
+    [state.auftraege[i], state.auftraege[newIdx]] = [state.auftraege[newIdx], state.auftraege[i]];
+    if (state.sapNumbers && state.sapNumbers[i] && state.sapNumbers[newIdx]) {
+      [state.sapNumbers[i], state.sapNumbers[newIdx]] = [state.sapNumbers[newIdx], state.sapNumbers[i]];
+    }
+    renderAuftraege();
+    saveState();
+    // Visual-Feedback auf der verschobenen Karte
+    requestAnimationFrame(() => {
+      const cards = document.querySelectorAll('#auftraege-container .auftrag-card');
+      if (cards[newIdx]) {
+        cards[newIdx].classList.add('just-moved');
+        setTimeout(() => cards[newIdx].classList.remove('just-moved'), 450);
+        cards[newIdx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
   function toggleReise(i, checked) {
     snapshotAuftraege();
     state.auftraege[i].reiseAktiv = checked;
