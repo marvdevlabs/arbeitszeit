@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net https://tessdata.projectnaptha.com https://unpkg.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1880,7 +1881,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.19.1';
+  const APP_VERSION = '1.20.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -2289,7 +2290,10 @@
     if (_tesseractLoading) return _tesseractLoading;
     _tesseractLoading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js';
+      script.integrity = 'sha384-sZlPHqJ8Pk1GMyFXfg9vOgDjyUZZe7wE2c0NoPg2z1vs2fmI4wOC0O1ONVyr73qa';
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
       script.onload = () => resolve(window.Tesseract);
       script.onerror = () => {
         _tesseractLoading = null;
@@ -3149,14 +3153,26 @@
   function loadTransferLibs() {
     if (window.LZString && window.qrcode) return Promise.resolve();
     if (_qrLibsLoading) return _qrLibsLoading;
-    const load = (src) => new Promise((resolve, reject) => {
+    const load = (src, integrity) => new Promise((resolve, reject) => {
       const s = document.createElement('script');
-      s.src = src; s.onload = resolve; s.onerror = () => reject(new Error('Bibliothek konnte nicht geladen werden: ' + src));
+      s.src = src;
+      if (integrity) {
+        s.integrity = integrity;
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+      }
+      s.onload = resolve; s.onerror = () => reject(new Error('Bibliothek konnte nicht geladen werden: ' + src));
       document.head.appendChild(s);
     });
     _qrLibsLoading = Promise.all([
-      window.LZString ? Promise.resolve() : load('https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js'),
-      window.qrcode  ? Promise.resolve() : load('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js')
+      window.LZString ? Promise.resolve() : load(
+        'https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js',
+        'sha384-0d+Gr7vM4Drod8E3hXKgciWJSWbjD/opKLLygI9ktiWbuvlDwQLzU46wJ9s5gsp7'
+      ),
+      window.qrcode  ? Promise.resolve() : load(
+        'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
+        'sha384-lQXOAyZwHXE55JFyrOMB7nY2Wv+m5ZWNtJcHrd1rceRQXAYNLak8ukN5TjBTcIwz'
+      )
     ]).catch(err => { _qrLibsLoading = null; throw err; });
     return _qrLibsLoading;
   }
