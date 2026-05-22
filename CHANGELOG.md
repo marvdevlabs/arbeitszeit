@@ -7,6 +7,28 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.26.0] — 2026-05-22
+
+### Geändert
+- **Abrechnungs-Check verlässt Beta-Status** — „Beta"-Badge auf dem Tool-Card entfernt.
+- **Startseite jetzt zwingend**: beim Öffnen der App landet man immer auf der Toolbox-Startseite (nicht mehr automatisch im zuletzt genutzten Tool). Ausnahme: URL-Hash `#import=…` oder `#abrechnung` überschreibt.
+- **Restore-Modal** für laufende Tageserfassung kommt jetzt erst beim aktiven Wechsel ins Tageserfassungs-Tool — nicht mehr störend auf der Startseite.
+- **Debug-Sections weg**: „Erkannte Lohnarten pro Block" und „Extrahierter Roh-Text" werden nicht mehr angezeigt (Code für künftiges Debug entfernt — bei Bedarf via DevTools-Console).
+
+### Hinzugefügt
+- **Persönliche Daten** für Netto-Berechnung — neue ausklappbare Card im Abrechnungs-Tool:
+  - Steuerklasse (I – VI), Kinderfreibeträge, Konfession (keine / ev / rk), Bundesland, KV-Zusatzbeitrag (%), kinderlos > 23 Jahre.
+  - Wird **nur lokal** im `localStorage` gespeichert (Key `abr_personal_v1`), kein Versand.
+  - Wird im Compare-Output als Cross-Check-Referenz angezeigt.
+- **Steuern + Sozialversicherung** werden aus der Abrechnung extrahiert (Lohnarten 710/720/740/750/770/785/799/800) — über das `-`-Suffix als zuverlässigen AN-Abzugs-Marker.
+- **Neue Section „5. Brutto → Netto"**: vollständige Monats-Aufstellung aus der Abrechnung mit allen Abzügen.
+- **Neue Section „6. Bereitschafts-Netto (geschätzt)"**: applies die Netto-Quote aus der Abrechnung auf das Bereitschafts-Brutto — du siehst direkt, was vom Bereitschafts-Einsatz netto auf dem Konto landet.
+
+### Geplant
+- Vollständige eigenständige Netto-Berechnung (Lohnsteuer-PAP) für Szenarien ohne Abrechnungs-PDF — in einem späteren Release.
+
+---
+
 ## [1.25.5] — 2026-05-22
 
 ### Behoben (Abrechnungs-Check)

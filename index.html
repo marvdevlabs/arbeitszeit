@@ -437,6 +437,52 @@
   }
   .privacy-banner strong { color: var(--text-strong); }
 
+  .abr-personal-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .abr-personal-card > summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    list-style: none;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    background: var(--bg-card-alt);
+  }
+  .abr-personal-card > summary::-webkit-details-marker { display: none; }
+  .abr-personal-card > summary::after {
+    content: '▾';
+    color: var(--text-muted);
+    transition: transform 0.15s;
+    font-size: 14px;
+    margin-left: auto;
+  }
+  .abr-personal-card[open] > summary::after { transform: rotate(180deg); }
+  .abr-personal-title {
+    font-size: 13px; font-weight: 700; color: var(--text-strong);
+  }
+  .abr-personal-status {
+    font-size: 11.5px; color: var(--text-muted);
+    flex: 1; text-align: right;
+    margin-right: 6px;
+  }
+  .abr-personal-status.set { color: var(--text-secondary); }
+  .abr-personal-form {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .abr-personal-form .form-row { margin-bottom: 10px; }
+  .abr-personal-form label {
+    font-size: 12px; margin-bottom: 3px;
+  }
+  .abr-personal-form input[type="number"],
+  .abr-personal-form select {
+    font-size: 14px; padding: 8px 10px;
+  }
+
   .upload-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -2075,8 +2121,7 @@
             </div>
             <div class="tool-card-title">Abrechnung prüfen<br><small style="font-weight:400;font-size:11.5px;color:var(--text-muted);">Bereitschaft &amp; LRE</small></div>
           </div>
-          <div class="tool-card-desc">Abrechnung + Bereitschafts-Liste hochladen, automatisch vergleichen und Brutto schätzen. Alles offline.</div>
-          <span class="tool-card-tag beta">Beta</span>
+          <div class="tool-card-desc">Abrechnung + Bereitschafts-Liste hochladen, automatisch vergleichen, Brutto und Netto berechnen. Alles offline.</div>
         </button>
       </div>
     </div>
@@ -2204,6 +2249,64 @@
         Monatsabgleich und vergleicht die ausgezahlten LRE-Werte mit der Liste. Mehrere Monate
         können nacheinander geprüft werden.
       </div>
+
+      <!-- ====== Persönliche Daten (für Netto-Berechnung) ====== -->
+      <details class="abr-personal-card" id="abrPersonalCard">
+        <summary>
+          <span class="abr-personal-title">Persönliche Daten</span>
+          <span class="abr-personal-status" id="abrPersonalSummary">Noch nicht eingestellt — bitte einmalig ausfüllen</span>
+        </summary>
+        <div class="abr-personal-form">
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrSteuerklasse">Steuerklasse</label>
+              <select class="form-select" id="abrSteuerklasse">
+                <option value="1">I (ledig)</option>
+                <option value="2">II (alleinerz.)</option>
+                <option value="3">III (verh. Hauptverd.)</option>
+                <option value="4">IV (verh. gleich)</option>
+                <option value="5">V (verh. Nebenverd.)</option>
+                <option value="6">VI (Zweitjob)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="abrKinder">Kinderfreibeträge</label>
+              <input type="number" id="abrKinder" min="0" max="8" step="0.5" value="0" inputmode="decimal">
+            </div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrKonfession">Konfession</label>
+              <select class="form-select" id="abrKonfession">
+                <option value="keine">Keine</option>
+                <option value="ev">Evangelisch</option>
+                <option value="rk">Römisch-katholisch</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="abrBundesland">Bundesland</label>
+              <select class="form-select" id="abrBundesland"></select>
+            </div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrKvZusatz">KV-Zusatzbeitrag (%)</label>
+              <input type="number" id="abrKvZusatz" min="0" max="5" step="0.05" value="1.7" inputmode="decimal">
+            </div>
+            <div class="form-row">
+              <label for="abrKinderlos">Kinderlos > 23 Jahre?</label>
+              <select class="form-select" id="abrKinderlos">
+                <option value="false">Nein</option>
+                <option value="true">Ja (+0,6 % PV)</option>
+              </select>
+            </div>
+          </div>
+          <div class="abr-hint" style="margin-top:6px;">
+            Diese Daten werden nur lokal in deinem Browser gespeichert und für den Cross-Check mit der Abrechnung sowie die Netto-Anzeige verwendet. Keine Übertragung nach außen.
+          </div>
+        </div>
+      </details>
+
       <div class="upload-grid">
         <label class="upload-slot" id="abrSlotAbrechnung">
           <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14h6M9 17h4"/></svg>
@@ -2463,7 +2566,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.25.5';
+  const APP_VERSION = '1.26.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -4397,6 +4500,7 @@
   /* ===== Tool-Switcher ===== */
   function showTool(name) {
     if (!['home', 'tageserfassung', 'abrechnung'].includes(name)) name = 'home';
+    const switchedToTageserfassung = (name === 'tageserfassung' && currentTool !== 'tageserfassung');
     currentTool = name;
     const tHome = document.getElementById('tool-home');
     const tTag  = document.getElementById('tool-tageserfassung');
@@ -4420,6 +4524,10 @@
 
     // Lightweight Persistenz nur fuer Tool-Auswahl (keine PDFs/PII).
     try { localStorage.setItem(TOOL_KEY, name); } catch (e) {}
+
+    // Wenn der User aktiv auf Tageserfassung wechselt UND es eine pending
+    // Restore-Anforderung gibt → erst jetzt zeigen (nicht auf Home).
+    if (switchedToTageserfassung) maybeShowPendingRestore();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -5608,6 +5716,10 @@
         ruf:  { std: 0, fak: 0, betrag: 0 },
         nacht:{ std: 0, fak: 0, betrag: 0 },
         brutto: 0,
+        // Steuern + Sozialversicherung (AN-Anteile, immer als positive Werte)
+        lst: 0, kist: 0,
+        kv: 0, rv: 0, av: 0, pv: 0,
+        netto: 0,
       };
       // Helfer fuer Cents-Normalisierung von Geldwerten (Faktor + Betrag).
       const norm100 = (v) => (v >= 1000 ? v / 100 : v);
@@ -5687,6 +5799,45 @@
             block.brutto = Math.max(block.brutto, brut);
           }
         }
+
+        // === Steuern + Sozialversicherung (AN-Anteile) ===
+        // Pattern: erste Zahl mit trailing "-" ist der monatliche AN-Abzug.
+        //   Lohnsteuer       710 11034- 21300       → 110,34 €
+        //   Kirchensteuer    720 365-               → 3,65 €
+        //   Krankenvers.     740 864 5173- Arbg...  → 51,73 €
+        //   Rentenvers.      750 930 5565- Arbg...  → 55,65 €
+        //   Arbeitslosenv.   770 130 778-           → 7,78 €
+        //   Pflegevers.      785 180 1077-          → 10,77 €
+        const extractNegative = (l) => {
+          const m = l.match(/(\d+(?:[.,]\d+)?)\s*-/);
+          if (!m) return 0;
+          let v = parseFloat(m[1].replace(',', '.'));
+          if (v > 1000 && Number.isInteger(v)) v = v / 100;
+          return v;
+        };
+        if (/\b710\b/.test(line) && /Lohnsteuer/i.test(line)) {
+          block.lst = Math.max(block.lst, extractNegative(line));
+        } else if (/\b720\b/.test(line) && /Kirchen/i.test(line)) {
+          block.kist = Math.max(block.kist, extractNegative(line));
+        } else if (/\b740\b/.test(line) && /Krankenvers/i.test(line)) {
+          block.kv = Math.max(block.kv, extractNegative(line));
+        } else if (/\b750\b/.test(line) && /Rentenvers/i.test(line)) {
+          block.rv = Math.max(block.rv, extractNegative(line));
+        } else if (/\b770\b/.test(line) && /Arbeitslos/i.test(line)) {
+          block.av = Math.max(block.av, extractNegative(line));
+        } else if (/\b785\b/.test(line) && /Pflegev/i.test(line)) {
+          block.pv = Math.max(block.pv, extractNegative(line));
+        }
+        // Netto: Lohnart 799 ("Netto") oder 800 ("Gesetzliches Netto").
+        //   Netto 799 37337 *      → 373,37 €
+        //   Gesetzliches Netto 800 373,37
+        else if (/\b(?:799|800)\b/.test(line) && /Netto/i.test(line)) {
+          const nums = parseLineNumbers(line);
+          const idx = nums.findIndex(n => n === 799 || n === 800);
+          let val = idx >= 0 && nums[idx + 1] !== undefined ? nums[idx + 1] : nums[nums.length - 1];
+          if (val > 1000 && Number.isInteger(val)) val = val / 100;
+          if (Number.isFinite(val) && val > 0) block.netto = Math.max(block.netto, val);
+        }
       }
       const key = String(seg.month).padStart(2, '0') + '.' + String(seg.year).slice(-2);
       if (!monthsMap.has(key)) {
@@ -5708,8 +5859,11 @@
         rufStd:  0, nachtStd: 0,
         lre1Betrag: 0, lre2Betrag: 0, lre3Betrag: 0,
         rufBetrag:  0, nachtBetrag: 0,
-        bereitschaftsBrutto: 0,  // LRE + Ruf + Nacht — on top vom Grundgehalt
-        brutto: 0,               // GESAMT-Brutto (alle Lohnarten, inkl. Grundgehalt)
+        bereitschaftsBrutto: 0,
+        brutto: 0,
+        lst: 0, kist: 0,
+        kv: 0, rv: 0, av: 0, pv: 0,
+        netto: 0,
       };
       monthObj.blocks.forEach(b => {
         sum.lre1Cnt    += b.lre1.cnt;
@@ -5723,11 +5877,19 @@
         sum.rufBetrag  += b.ruf.betrag;
         sum.nachtBetrag+= b.nacht.betrag;
         sum.brutto     += b.brutto;
+        sum.lst        += b.lst;
+        sum.kist       += b.kist;
+        sum.kv         += b.kv;
+        sum.rv         += b.rv;
+        sum.av         += b.av;
+        sum.pv         += b.pv;
+        sum.netto      += b.netto;
       });
       sum.bereitschaftsBrutto = abrRound2(
         sum.lre1Betrag + sum.lre2Betrag + sum.lre3Betrag +
         sum.rufBetrag  + sum.nachtBetrag
       );
+      sum.abzuegeTotal = abrRound2(sum.lst + sum.kist + sum.kv + sum.rv + sum.av + sum.pv);
       monthObj.sum = sum;
       result.months.push(monthObj);
     }
@@ -5825,6 +5987,95 @@
     if (!result.month) result.warnings.push('Monat konnte nicht erkannt werden.');
     if (!(result.lre1Cnt + result.lre2Cnt + result.lre3Cnt)) result.warnings.push('Keine LRE-Eintraege gefunden.');
     return result;
+  }
+
+  /* ===== Persoenliche Daten (Steuerklasse, Kinder, Konfession, ...) =====
+   * Werden nur lokal in localStorage gespeichert. Keine PDFs / keine Datei-
+   * Inhalte — nur die einmalig vom User eingegebenen Konfig-Werte.
+   */
+  const ABR_PERSONAL_KEY = 'abr_personal_v1';
+  const abrPersonalDefault = {
+    steuerklasse: 1,
+    kinder: 0,
+    konfession: 'keine',
+    bundesland: '',
+    kvZusatz: 1.7,
+    kinderlos: false,
+  };
+  let abrPersonal = Object.assign({}, abrPersonalDefault);
+
+  function loadAbrPersonal() {
+    try {
+      const raw = localStorage.getItem(ABR_PERSONAL_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (typeof d !== 'object' || !d) return;
+      if (typeof d.steuerklasse === 'number' && d.steuerklasse >= 1 && d.steuerklasse <= 6) abrPersonal.steuerklasse = d.steuerklasse;
+      if (typeof d.kinder === 'number' && d.kinder >= 0 && d.kinder <= 12) abrPersonal.kinder = d.kinder;
+      if (['keine','ev','rk'].includes(d.konfession)) abrPersonal.konfession = d.konfession;
+      if (typeof d.bundesland === 'string' && BUNDESLAENDER.some(b => b.code === d.bundesland)) abrPersonal.bundesland = d.bundesland;
+      if (typeof d.kvZusatz === 'number' && d.kvZusatz >= 0 && d.kvZusatz <= 5) abrPersonal.kvZusatz = d.kvZusatz;
+      if (typeof d.kinderlos === 'boolean') abrPersonal.kinderlos = d.kinderlos;
+    } catch (e) { console.warn('loadAbrPersonal:', e); }
+  }
+  function saveAbrPersonal() {
+    try { localStorage.setItem(ABR_PERSONAL_KEY, JSON.stringify(abrPersonal)); } catch (e) {}
+  }
+  function abrPersonalIsComplete() {
+    return !!abrPersonal.bundesland;
+  }
+  function abrPersonalSummary() {
+    if (!abrPersonalIsComplete()) return 'Noch nicht eingestellt — bitte einmalig ausfüllen';
+    const stRoman = ['','I','II','III','IV','V','VI'][abrPersonal.steuerklasse] || abrPersonal.steuerklasse;
+    const konf = abrPersonal.konfession === 'keine' ? 'keine' : (abrPersonal.konfession === 'ev' ? 'ev.' : 'rk.');
+    return 'St ' + stRoman + ' · ' + abrPersonal.kinder + ' Kind(er) · ' + konf + ' · ' + abrPersonal.bundesland + ' · KV+' + abrPersonal.kvZusatz.toFixed(2).replace('.', ',') + ' %' + (abrPersonal.kinderlos ? ' · kinderlos>23' : '');
+  }
+  function updateAbrPersonalSummary() {
+    const el = document.getElementById('abrPersonalSummary');
+    if (!el) return;
+    el.textContent = abrPersonalSummary();
+    el.classList.toggle('set', abrPersonalIsComplete());
+  }
+  function initAbrPersonalForm() {
+    // Bundesland-Select fuellen (gleiche Liste wie Tageserfassung).
+    const bSel = document.getElementById('abrBundesland');
+    if (bSel && bSel.options.length <= 1) {
+      bSel.innerHTML = '<option value="">— bitte wählen —</option>';
+      BUNDESLAENDER.forEach(bl => {
+        const opt = document.createElement('option');
+        opt.value = bl.code; opt.textContent = bl.name + ' (' + bl.code + ')';
+        bSel.appendChild(opt);
+      });
+    }
+    // Werte einsetzen
+    const ids = ['abrSteuerklasse','abrKinder','abrKonfession','abrBundesland','abrKvZusatz','abrKinderlos'];
+    document.getElementById('abrSteuerklasse').value = String(abrPersonal.steuerklasse);
+    document.getElementById('abrKinder').value       = String(abrPersonal.kinder);
+    document.getElementById('abrKonfession').value   = abrPersonal.konfession;
+    document.getElementById('abrBundesland').value   = abrPersonal.bundesland || '';
+    document.getElementById('abrKvZusatz').value     = String(abrPersonal.kvZusatz);
+    document.getElementById('abrKinderlos').value    = String(abrPersonal.kinderlos);
+    // Change-Handler
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', onAbrPersonalChange);
+    });
+    updateAbrPersonalSummary();
+  }
+  function onAbrPersonalChange() {
+    abrPersonal.steuerklasse = parseInt(document.getElementById('abrSteuerklasse').value, 10) || 1;
+    abrPersonal.kinder       = parseFloat(document.getElementById('abrKinder').value) || 0;
+    abrPersonal.konfession   = document.getElementById('abrKonfession').value || 'keine';
+    abrPersonal.bundesland   = document.getElementById('abrBundesland').value || '';
+    abrPersonal.kvZusatz     = parseFloat(document.getElementById('abrKvZusatz').value) || 0;
+    abrPersonal.kinderlos    = document.getElementById('abrKinderlos').value === 'true';
+    saveAbrPersonal();
+    updateAbrPersonalSummary();
+    // Wenn schon ein Vergleich offen ist → neu rendern (Netto-Anzeige aktualisieren)
+    if (abrState.abrechnung && abrState.bereitschaft && abrState.abrechnung.parsed && abrState.bereitschaft.parsed) {
+      abrTryCompare();
+    }
   }
 
   /* ---- Vergleich ---- */
@@ -6021,13 +6272,11 @@
     html += '</div>';
     if (!aLayout || !bLayout) {
       html += '<div class="abr-hint">Eine der Dateien sieht nicht aus wie der erwartete Typ. Vergleich abgebrochen — bitte richtige Dateien laden.</div>';
-      html += abrRawSection(a, b);
       el.innerHTML = html;
       return;
     }
     if (!a.parsed || !b.parsed) {
       html += '<div class="abr-hint">Layout erkannt, aber Inhalte konnten nicht ausgelesen werden.</div>';
-      html += abrRawSection(a, b);
       el.innerHTML = html;
       return;
     }
@@ -6052,7 +6301,6 @@
       html += '<div class="abr-status-row"><span class="abr-status-badge err">Monat passt nicht</span></div>';
       const found = (cmp && cmp.abrMonthsFound.length) ? cmp.abrMonthsFound.join(', ') : '–';
       html += '<div class="abr-hint">Bereitschafts-Liste: <strong>' + escapeHtml(berMonth) + '</strong>. In Abrechnung gefunden: <strong>' + escapeHtml(found) + '</strong>.</div>';
-      html += abrRawSection(a, b);
       el.innerHTML = html;
       return;
     }
@@ -6153,7 +6401,64 @@
     html += '</div>';
     html += '</div>';
 
-    // 5) Hinweise
+    // 5) Brutto → Netto (komplett aus Abrechnung)
+    if (s.brutto > 0 && s.netto > 0) {
+      html += '<div class="abr-result-block">';
+      html += '<h4>5. Brutto → Netto (laut Abrechnung)</h4>';
+      html += '<div class="abr-hint">Komplette Monats-Aufstellung aus deiner Abrechnung — Brutto, gesetzliche Abzüge und das, was dir tatsächlich überwiesen wurde.</div>';
+      html += '<table class="abr-table">';
+      html += '<thead><tr><th>Posten</th><th class="num">Betrag</th></tr></thead>';
+      html += '<tbody>';
+      html += '<tr><td><strong>Brutto-Verdienst (gesamt)</strong></td><td class="num"><strong>' + abrFmtEUR(s.brutto) + '</strong></td></tr>';
+      if (s.lst  > 0) html += '<tr class="diff"><td>− Lohnsteuer</td><td class="num">−' + abrFmtEUR(s.lst) + '</td></tr>';
+      if (s.kist > 0) html += '<tr class="diff"><td>− Kirchensteuer</td><td class="num">−' + abrFmtEUR(s.kist) + '</td></tr>';
+      if (s.kv   > 0) html += '<tr class="diff"><td>− Krankenversicherung</td><td class="num">−' + abrFmtEUR(s.kv) + '</td></tr>';
+      if (s.rv   > 0) html += '<tr class="diff"><td>− Rentenversicherung</td><td class="num">−' + abrFmtEUR(s.rv) + '</td></tr>';
+      if (s.av   > 0) html += '<tr class="diff"><td>− Arbeitslosenversicherung</td><td class="num">−' + abrFmtEUR(s.av) + '</td></tr>';
+      if (s.pv   > 0) html += '<tr class="diff"><td>− Pflegeversicherung</td><td class="num">−' + abrFmtEUR(s.pv) + '</td></tr>';
+      const abz = s.abzuegeTotal || 0;
+      html += '<tr><td style="font-weight:600;">Summe Abzüge</td><td class="num" style="font-weight:600;">−' + abrFmtEUR(abz) + '</td></tr>';
+      html += '<tr style="border-top:2px solid var(--border);">';
+      html += '<td style="font-weight:800;color:var(--text-strong);">= Netto (Überweisung)</td>';
+      html += '<td class="num" style="font-weight:800;font-size:15px;color:#2EA043;">' + abrFmtEUR(s.netto) + '</td></tr>';
+      html += '</tbody></table>';
+      // Sanity-Check
+      const calcNetto = abrRound2(s.brutto - abz);
+      const drift = Math.abs(calcNetto - s.netto);
+      if (drift > 1) {
+        html += '<div class="abr-hint" style="color:var(--db-red);">Hinweis: Brutto − Abzüge = ' + abrFmtEUR(calcNetto) + ' weicht von Abrechnungs-Netto (' + abrFmtEUR(s.netto) + ') um ' + abrFmtEUR(drift) + ' ab. Kann durch weitere Abzüge (Firmenrad, Sachbezug, etc.) erklärbar sein.</div>';
+      }
+      html += '</div>';
+
+      // 6) Bereitschafts-Netto (geschaetzt via Netto-Quote)
+      if (s.bereitschaftsBrutto > 0) {
+        const nettoQuote = s.netto / s.brutto;
+        const bereitNetto = abrRound2(s.bereitschaftsBrutto * nettoQuote);
+        html += '<div class="abr-result-block">';
+        html += '<h4>6. Bereitschafts-Netto (geschätzt)</h4>';
+        html += '<div class="abr-hint">Was ungefähr vom Bereitschafts-Brutto am Ende auf deinem Konto landet — geschätzt mit der Netto-Quote aus dieser Abrechnung (' + (nettoQuote * 100).toFixed(1).replace('.', ',') + ' %).</div>';
+        html += '<div class="abr-brutto"><span>Bereitschafts-Brutto:</span><span class="val">' + abrFmtEUR(s.bereitschaftsBrutto) + '</span></div>';
+        html += '<div class="abr-brutto"><span>× Netto-Quote:</span><span class="val">' + (nettoQuote * 100).toFixed(2).replace('.', ',') + ' %</span></div>';
+        html += '<div class="abr-brutto" style="border-top:1px dashed var(--border);padding-top:8px;margin-top:6px;">';
+        html += '<span style="font-weight:700;">≈ Bereitschafts-Netto:</span>';
+        html += '<span class="val ok">' + abrFmtEUR(bereitNetto) + '</span>';
+        html += '</div>';
+        html += '<div class="abr-hint">Hinweis: Diese Schätzung ist <em>linear</em> — in Wirklichkeit kann der marginale Netto-Anteil etwas niedriger sein (progressive Lohnsteuer). Für eine grobe Orientierung reicht es aber gut.</div>';
+
+        // Optional: Cross-Check mit Personal-Daten
+        if (abrPersonalIsComplete()) {
+          html += '<details class="abr-details" style="margin-top:10px;"><summary>Cross-Check mit deinen persönlichen Daten</summary><div style="padding:10px 12px;font-size:12px;color:var(--text-secondary);line-height:1.6;">';
+          html += '<div><strong>Eingestellt:</strong> ' + escapeHtml(abrPersonalSummary()) + '</div>';
+          html += '<div style="margin-top:6px;">Die Netto-Schätzung oben basiert direkt auf den Werten deiner Abrechnung — deine persönlichen Daten dienen nur als Referenz. Eine vollständige Netto-Berechnung von Grund auf (ohne Abrechnung) kommt in einem späteren Release.</div>';
+          html += '</div></details>';
+        } else {
+          html += '<div class="abr-hint" style="margin-top:8px;">Tipp: Trag oben deine <strong>persönlichen Daten</strong> ein, damit das Tool die Abrechnungs-Werte gegen deine Konfig validieren kann.</div>';
+        }
+        html += '</div>';
+      }
+    }
+
+    // 7) Hinweise
     const warnings = [].concat(abr.warnings || []).concat(ber.warnings || []);
     if (warnings.length) {
       html += '<div class="abr-result-block"><h4>Hinweise</h4><ul style="padding-left:18px;margin:0;">';
@@ -6161,55 +6466,7 @@
       html += '</ul></div>';
     }
 
-    // 6) Detail pro Block (Debug)
-    html += abrBlocksDebugSection(abr);
-
-    // 7) Roh-Text (collapsible)
-    html += abrRawSection(a, b);
-
     el.innerHTML = html;
-  }
-  function abrBlocksDebugSection(abr) {
-    if (!abr || !abr.months) return '';
-    let html = '<details class="abr-details"><summary>Erkannte Lohnarten pro Block (Debug)</summary><pre>';
-    for (const month of abr.months) {
-      html += escapeHtml(month.monthKey) + ':\n';
-      for (const block of month.blocks) {
-        html += '  Block ' + escapeHtml(block.raw) + ':\n';
-        const rows = [
-          ['LRE1', block.lre1],
-          ['LRE2', block.lre2],
-          ['LRE3', block.lre3],
-          ['Ruf ', block.ruf],
-          ['Nacht', block.nacht],
-        ];
-        for (const [name, v] of rows) {
-          const cnt = v.cnt !== undefined ? v.cnt : v.std;
-          html += '    ' + name + ': Anzahl=' + abrFmtNum(cnt, 2)
-                + '  Faktor=' + abrFmtEUR(v.fak)
-                + '  Betrag=' + abrFmtEUR(v.betrag) + '\n';
-        }
-        html += '    Brutto: ' + abrFmtEUR(block.brutto) + '\n';
-      }
-    }
-    html += '</pre></details>';
-    return html;
-  }
-  function abrRawSection(a, b) {
-    let html = '';
-    if (a && a.ext) {
-      const t = a.ext.full;
-      html += '<details class="abr-details"><summary>Extrahierter Roh-Text (Abrechnung) — ' + a.ext.numPages + ' Seite(n)</summary><pre>'
-           + escapeHtml(t.slice(0, 8000)) + (t.length > 8000 ? '\n[… ' + (t.length - 8000) + ' weitere Zeichen abgeschnitten …]' : '')
-           + '</pre></details>';
-    }
-    if (b && b.ext) {
-      const t = b.ext.full;
-      html += '<details class="abr-details"><summary>Extrahierter Roh-Text (Bereitschafts-Liste) — ' + b.ext.numPages + ' Seite(n)</summary><pre>'
-           + escapeHtml(t.slice(0, 8000)) + (t.length > 8000 ? '\n[… ' + (t.length - 8000) + ' weitere Zeichen abgeschnitten …]' : '')
-           + '</pre></details>';
-    }
-    return html;
   }
 
   /* ===== Service Worker (PWA Offline) ===== */
@@ -6220,8 +6477,16 @@
     });
   }
 
-  /* ===== Restore-Modal beim Start ===== */
+  /* ===== Restore-Modal — wird beim ersten Wechsel auf Tageserfassung gezeigt ===== */
   let pendingRestoreStep = null;
+  let _pendingRestoreOnTageserfassung = null;
+  function maybeShowPendingRestore() {
+    if (_pendingRestoreOnTageserfassung != null) {
+      const step = _pendingRestoreOnTageserfassung;
+      _pendingRestoreOnTageserfassung = null;
+      setTimeout(() => showRestoreModal(step), 250);
+    }
+  }
   function showRestoreModal(savedStep) {
     pendingRestoreStep = savedStep;
     const dateLabel = state.date
@@ -6249,42 +6514,32 @@
   const restoredStep = loadState();
   updateBundeslandDisplay();
   abrInitFileInputs();
+  loadAbrPersonal();
+  initAbrPersonalForm();
 
   // Welches Tool soll initial gezeigt werden?
-  // Regeln:
-  //   1) URL-Hash #import / #abrechnung gewinnt
-  //   2) Sonst: laufende Tageserfassung mit echten Eingaben → Tageserfassung
-  //   3) Sonst: zuletzt aktives Tool aus localStorage
-  //   4) Fallback: Toolbox-Startseite
+  // Regel: IMMER Toolbox-Startseite. Ausnahme nur URL-Hash:
+  //   #import=... → Tageserfassung (Import-Flow)
+  //   #abrechnung → Abrechnungs-Check
+  // Eine laufende Tageserfassung wird ueber das Restore-Modal (vom Home-Screen
+  // aus) angeboten, automatisches Wegspringen wuerde User-Intent ignorieren.
   const hash = (location.hash || '');
-  const lastTool = loadCurrentTool();
   const hasOpenDay = !!(restoredStep && dayHasWork(state));
-  let initialTool = 'home';
-  if (hash.startsWith('#import=')) {
-    initialTool = 'tageserfassung';
-  } else if (hash === '#abrechnung') {
-    initialTool = 'abrechnung';
-  } else if (hasOpenDay) {
-    initialTool = 'tageserfassung';
-  } else if (lastTool === 'abrechnung') {
-    initialTool = 'abrechnung';
-  } else if (lastTool === 'tageserfassung' && restoredStep) {
-    initialTool = 'tageserfassung';
-  }
 
-  if (initialTool === 'tageserfassung') {
+  if (hash.startsWith('#import=')) {
     showTool('tageserfassung');
     showStep(restoredStep || 1);
-  } else if (initialTool === 'abrechnung') {
+  } else if (hash === '#abrechnung') {
     showTool('abrechnung');
   } else {
     showTool('home');
   }
 
-  // Wenn echte Eingaben vom Vortag noch da sind, frag den User
-  // ob er weitermachen oder den Tag archivieren will.
+  // Wenn echte Eingaben vom Vortag noch da sind, merken — Modal kommt beim
+  // ersten Wechsel auf Tageserfassung (oder sofort, wenn wir schon dort sind).
   if (hasOpenDay) {
-    setTimeout(() => showRestoreModal(restoredStep), 250);
+    _pendingRestoreOnTageserfassung = restoredStep;
+    if (currentTool === 'tageserfassung') maybeShowPendingRestore();
   }
   // Tag-Import via URL-Hash (#import=...) — wenn vorhanden, Bestaetigungs-Modal anzeigen
   if (hash.startsWith('#import=')) {
