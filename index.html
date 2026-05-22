@@ -482,7 +482,6 @@
   .abr-personal-form select {
     font-size: 14px; padding: 8px 10px;
   }
-
   .upload-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -2329,7 +2328,7 @@
           </div>
           <div class="abr-hint" style="margin-top:6px;">
             Diese Daten werden nur lokal in deinem Browser gespeichert. Keine Übertragung nach außen.
-            Funktionsgruppe/Entgeltgruppe/Stufe sind aktuell nur informativ — automatische Tarif-Lookup kommt später.
+            Das Grundgehalt trägst du bitte selbst ein — Tarif-Tabellen sind aus Datenschutz-Gründen nicht im Code hinterlegt.
           </div>
         </div>
       </details>
@@ -2594,7 +2593,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.28.0';
+  const APP_VERSION = '1.30.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6603,70 +6602,15 @@
     // ====== SCHRITT 2: GELD-PRUEFUNG ======
     html += '<div class="abr-result-block" style="background:var(--info-bg);">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">';
-    html += '<div><strong>Schritt 2: Geld-Prüfung</strong><br><span style="font-size:12px;color:var(--text-secondary);">Stimmen die ausgezahlten Beträge?</span></div>';
+    html += '<div><strong>Schritt 2: Geld-Prüfung</strong><br><span style="font-size:12px;color:var(--text-secondary);">Stimmt der überwiesene Betrag?</span></div>';
     html += '<button class="btn btn-secondary" style="font-size:12px;padding:6px 12px;" onclick="abrHideMoney()">← Nur LRE-Check anzeigen</button>';
     html += '</div>';
     html += '</div>';
 
-    // 4) Bereitschafts-Brutto (NUR Bereitschaft + Zulagen, on top vom Grundgehalt)
-    html += '<div class="abr-result-block">';
-    html += '<h4>4. Bereitschafts-Brutto (on top vom Grundgehalt)</h4>';
-    html += '<div class="abr-hint">Was die DB dir zusätzlich zum Grundgehalt für diesen Monat überwiesen hat — nur Bereitschafts-Einsätze (LRE) und Zulagen (Rufbereitschaft, Nachtzulage). Grundgehalt, EFZ und sonstige Lohnanteile sind hier NICHT enthalten.</div>';
-    // Detail-Tabelle: Bereitschafts-Posten aus der Abrechnung
-    const bb = [
-      { label: 'LRE 1 (Ersteinsatz)',     cnt: s.lre1Cnt,  unit: 'x', fak: cmp.rates.LRE1,      betrag: s.lre1Betrag },
-      { label: 'LRE 2 (Folge-Einsatz)',   cnt: s.lre2Cnt,  unit: 'x', fak: cmp.rates.LRE2,      betrag: s.lre2Betrag },
-      { label: 'LRE 3 (telefonisch)',     cnt: s.lre3Cnt,  unit: 'x', fak: cmp.rates.LRE3,      betrag: s.lre3Betrag },
-      { label: 'Rufbereitschaft',         cnt: s.rufStd,   unit: 'h', fak: cmp.rates.Rufbereit, betrag: s.rufBetrag },
-      { label: 'Nachtzulage',             cnt: s.nachtStd, unit: 'h', fak: cmp.rates.Nachtzulage, betrag: s.nachtBetrag },
-    ];
-    html += '<table class="abr-table">';
-    html += '<thead><tr><th>Posten</th><th class="num">Anzahl</th><th class="num">× Faktor</th><th class="num">= Betrag</th></tr></thead>';
-    html += '<tbody>';
-    for (const r of bb) {
-      if (r.cnt === 0 && r.betrag === 0) continue;
-      html += '<tr>';
-      html += '<td>' + escapeHtml(r.label) + '</td>';
-      html += '<td class="num">' + abrFmtNum(r.cnt, r.unit === 'h' ? 2 : 0) + ' ' + r.unit + '</td>';
-      html += '<td class="num">' + abrFmtEUR(r.fak) + (r.unit === 'h' ? '/h' : '') + '</td>';
-      html += '<td class="num">' + abrFmtEUR(r.betrag) + '</td>';
-      html += '</tr>';
-    }
-    html += '<tr style="border-top:2px solid var(--border);">';
-    html += '<td style="font-weight:700;color:var(--text-strong);">Summe</td>';
-    html += '<td class="num"></td><td class="num"></td>';
-    html += '<td class="num" style="font-weight:800;font-size:15px;color:var(--text-strong);">' + abrFmtEUR(s.bereitschaftsBrutto) + '</td>';
-    html += '</tr>';
-    html += '</tbody></table>';
-    // Vergleich: Liste-Schaetzung vs. Abrechnungs-Bereitschafts-Brutto
-    const expectedListe = cmp.estimatedBrutto;
-    const paidBereit    = s.bereitschaftsBrutto;
-    const nachtAnteil   = s.nachtBetrag;
-    const expectedPlusNacht = abrRound2(expectedListe + nachtAnteil);
-    const diff = abrRound2(paidBereit - expectedPlusNacht);
-    html += '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">';
-    html += '<div class="abr-brutto"><span>Aus Liste erwartet (LRE + Rufbereitschaft):</span><span class="val">' + abrFmtEUR(expectedListe) + '</span></div>';
-    if (nachtAnteil > 0) {
-      html += '<div class="abr-brutto"><span>+ Nachtzulage (aus Abrechnung, in Liste nicht enthalten):</span><span class="val">' + abrFmtEUR(nachtAnteil) + '</span></div>';
-      html += '<div class="abr-brutto"><span>= Erwartet inkl. Nachtzulage:</span><span class="val">' + abrFmtEUR(expectedPlusNacht) + '</span></div>';
-    }
-    html += '<div class="abr-brutto"><span>Tatsächlich gezahlt (Bereitschaft + Zulagen):</span><span class="val">' + abrFmtEUR(paidBereit) + '</span></div>';
-    const diffCls = Math.abs(diff) < 0.50 ? 'ok' : 'diff';
-    html += '<div class="abr-brutto"><span>Differenz:</span><span class="val ' + diffCls + '">' + (diff > 0 ? '+' : '') + abrFmtEUR(diff) + '</span></div>';
-    if (Math.abs(diff) < 0.50) {
-      html += '<div class="abr-hint" style="color:#2EA043;font-weight:600;">✓ Passt — du hast genau bekommen was dir zusteht.</div>';
-    } else if (diff < 0) {
-      html += '<div class="abr-hint" style="color:var(--db-red);font-weight:600;">⚠ Zu wenig ausgezahlt! Differenz von ' + abrFmtEUR(-diff) + ' — bitte beim Personalservice klären.</div>';
-    } else {
-      html += '<div class="abr-hint">Du hast etwas mehr bekommen als erwartet. Kann durch Rundungen oder zusätzliche Zulagen passieren.</div>';
-    }
-    html += '</div>';
-    html += '</div>';
-
-    // 5) Brutto → Netto (komplett aus Abrechnung)
+    // 4) Brutto → Netto (komplett aus Abrechnung)
     if (s.brutto > 0 && s.netto > 0) {
       html += '<div class="abr-result-block">';
-      html += '<h4>5. Brutto → Netto (laut Abrechnung)</h4>';
+      html += '<h4>4. Brutto → Netto (laut Abrechnung)</h4>';
       html += '<div class="abr-hint">Komplette Monats-Aufstellung aus deiner Abrechnung — Brutto, gesetzliche Abzüge und das, was dir tatsächlich überwiesen wurde.</div>';
       html += '<table class="abr-table">';
       html += '<thead><tr><th>Posten</th><th class="num">Betrag</th></tr></thead>';
@@ -6684,50 +6628,33 @@
       html += '<td style="font-weight:800;color:var(--text-strong);">= Netto (Überweisung)</td>';
       html += '<td class="num" style="font-weight:800;font-size:15px;color:#2EA043;">' + abrFmtEUR(s.netto) + '</td></tr>';
       html += '</tbody></table>';
-      // Sanity-Check
       const calcNetto = abrRound2(s.brutto - abz);
       const drift = Math.abs(calcNetto - s.netto);
       if (drift > 1) {
         html += '<div class="abr-hint" style="color:var(--db-red);">Hinweis: Brutto − Abzüge = ' + abrFmtEUR(calcNetto) + ' weicht von Abrechnungs-Netto (' + abrFmtEUR(s.netto) + ') um ' + abrFmtEUR(drift) + ' ab. Kann durch weitere Abzüge (Firmenrad, Sachbezug, etc.) erklärbar sein.</div>';
       }
       html += '</div>';
-
-      // 6) Bereitschafts-Netto (geschaetzt via Netto-Quote)
-      if (s.bereitschaftsBrutto > 0) {
-        const nettoQuote = s.netto / s.brutto;
-        const bereitNetto = abrRound2(s.bereitschaftsBrutto * nettoQuote);
-        html += '<div class="abr-result-block">';
-        html += '<h4>6. Bereitschafts-Netto (geschätzt)</h4>';
-        html += '<div class="abr-hint">Was ungefähr vom Bereitschafts-Brutto am Ende auf deinem Konto landet — geschätzt mit der Netto-Quote aus dieser Abrechnung (' + (nettoQuote * 100).toFixed(1).replace('.', ',') + ' %).</div>';
-        html += '<div class="abr-brutto"><span>Bereitschafts-Brutto:</span><span class="val">' + abrFmtEUR(s.bereitschaftsBrutto) + '</span></div>';
-        html += '<div class="abr-brutto"><span>× Netto-Quote:</span><span class="val">' + (nettoQuote * 100).toFixed(2).replace('.', ',') + ' %</span></div>';
-        html += '<div class="abr-brutto" style="border-top:1px dashed var(--border);padding-top:8px;margin-top:6px;">';
-        html += '<span style="font-weight:700;">≈ Bereitschafts-Netto:</span>';
-        html += '<span class="val ok">' + abrFmtEUR(bereitNetto) + '</span>';
-        html += '</div>';
-        html += '<div class="abr-hint">Hinweis: Diese Schätzung ist <em>linear</em> — in Wirklichkeit kann der marginale Netto-Anteil etwas niedriger sein (progressive Lohnsteuer). Für eine grobe Orientierung reicht es aber gut.</div>';
-
-        // Optional: Cross-Check mit Personal-Daten
-        if (abrPersonalIsComplete()) {
-          html += '<details class="abr-details" style="margin-top:10px;"><summary>Cross-Check mit deinen persönlichen Daten</summary><div style="padding:10px 12px;font-size:12px;color:var(--text-secondary);line-height:1.6;">';
-          html += '<div><strong>Eingestellt:</strong> ' + escapeHtml(abrPersonalSummary()) + '</div>';
-          html += '<div style="margin-top:6px;">Die Netto-Schätzung oben basiert direkt auf den Werten deiner Abrechnung — deine persönlichen Daten dienen nur als Referenz. Eine vollständige Netto-Berechnung von Grund auf (ohne Abrechnung) kommt in einem späteren Release.</div>';
-          html += '</div></details>';
-        } else {
-          html += '<div class="abr-hint" style="margin-top:8px;">Tipp: Trag oben deine <strong>persönlichen Daten</strong> ein, damit das Tool die Abrechnungs-Werte gegen deine Konfig validieren kann.</div>';
-        }
-        html += '</div>';
-      }
     }
 
-    // 7) Komplett-Berechnung mit Personal-Daten (wenn Grundgehalt gesetzt)
+    // 5) FINAL: Auszahlungsbetrag mit Bereitschaft
     if (abrPersonalIsComplete() && abrPersonalHasGrundgehalt() && s.bereitschaftsBrutto > 0) {
-      html += abrRenderKomplettCalc(s.bereitschaftsBrutto);
-    } else if (abrPersonalIsComplete() && !abrPersonalHasGrundgehalt()) {
-      html += '<div class="abr-result-block"><div class="abr-hint">💡 Tipp: Trag oben dein <strong>monatliches Grundgehalt</strong> ein, dann zeigt das Tool dir die komplette Netto-Berechnung — Grundgehalt + Bereitschaft + Zulagen → was wirklich aufs Konto kommt.</div></div>';
+      const gg     = abrPersonal.grundgehalt;
+      const ohneB  = abrCalcNetto(gg, abrPersonal);
+      const mitB   = abrCalcNetto(gg + s.bereitschaftsBrutto, abrPersonal);
+      const delta  = abrRound2(mitB.netto - ohneB.netto);
+      html += '<div class="abr-result-block" style="border:1.5px solid #2EA043;background:rgba(46,160,67,0.06);">';
+      html += '<h4 style="color:#2EA043;">💰 Dein Auszahlungsbetrag mit Bereitschaft</h4>';
+      html += '<div class="abr-hint">Berechnet aus deinem Grundgehalt (' + abrFmtEUR(gg) + ') + Bereitschafts-Brutto (' + abrFmtEUR(s.bereitschaftsBrutto) + ') unter Berücksichtigung deiner persönlichen Steuer- und SV-Konfig.</div>';
+      html += '<div class="abr-brutto" style="margin-top:10px;"><span>Monats-Netto ohne Bereitschaft:</span><span class="val">' + abrFmtEUR(ohneB.netto) + '</span></div>';
+      html += '<div class="abr-brutto"><span>Monats-Netto MIT Bereitschaft:</span><span class="val ok" style="font-size:22px;">' + abrFmtEUR(mitB.netto) + '</span></div>';
+      html += '<div class="abr-brutto" style="border-top:1px dashed var(--border);padding-top:8px;margin-top:6px;"><span>Davon Bereitschaft (netto on top):</span><span class="val ok">+' + abrFmtEUR(delta) + '</span></div>';
+      html += '<div class="abr-hint" style="margin-top:8px;font-style:italic;">⚠️ Schätzung — verbindlich ist nur die Abrechnung deines Arbeitgebers. Vorsorgepauschale stark vereinfacht.</div>';
+      html += '</div>';
+    } else if (!abrPersonalIsComplete() || !abrPersonalHasGrundgehalt()) {
+      html += '<div class="abr-result-block"><div class="abr-hint">💡 Trag oben in <strong>Persönliche Daten</strong> dein Grundgehalt + Steuerklasse/Bundesland ein, dann zeigt dir das Tool hier den Auszahlungsbetrag mit Bereitschaft an.</div></div>';
     }
 
-    // 8) Hinweise
+    // 6) Hinweise
     const warnings = [].concat(abr.warnings || []).concat(ber.warnings || []);
     if (warnings.length) {
       html += '<div class="abr-result-block"><h4>Hinweise</h4><ul style="padding-left:18px;margin:0;">';

@@ -7,6 +7,21 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.30.0] — 2026-05-22
+
+### Geändert (Layout vereinfacht)
+- **Bereitschafts-Brutto-Tabelle** (vorher Section 4) und **Bereitschafts-Netto-Quote** (vorher Section 6) im Schritt-2-View entfernt — viel zu viel Detail.
+- **Neue „💰 Dein Auszahlungsbetrag mit Bereitschaft"-Karte** am Ende:
+  - „Monats-Netto ohne Bereitschaft" vs. „Monats-Netto mit Bereitschaft" (groß hervorgehoben)
+  - „Davon Bereitschaft (netto on top)" als Differenz
+  - Grün umrandet — das Endergebnis auf einen Blick.
+- Schritt-2-View jetzt nur noch: „Brutto → Netto (laut Abrechnung)" + „Dein Auszahlungsbetrag mit Bereitschaft". Übersichtlicher.
+
+### Hinweise
+- Die Eingabefelder Funktionsgruppe / Entgeltgruppe / Stufe sind aus Datenschutzgründen rein informativ — das Grundgehalt wird manuell eingetragen, keine Tarif-Tabellen sind im Code hinterlegt.
+
+---
+
 ## [1.28.0] — 2026-05-22
 
 ### Geändert
