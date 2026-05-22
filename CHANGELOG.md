@@ -7,6 +7,23 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.25.5] — 2026-05-22
+
+### Behoben (Abrechnungs-Check)
+- **Rufbereitschafts- und Nachtzulage-Faktor wurden nicht durch 100 geteilt** (zeigte „285,00 €/h" statt „2,85 €/h"). Ursache: meine `norm100()`-Funktion teilt nur Werte ≥ 1000. Stunden-Lohnarten haben Faktoren wie 285 (raw) = 2,85 €/h — die fallen durchs Raster. **Fix**: bei Rufbereitschaft/Nachtzulage IMMER durch 100 teilen (alle drei Werte sind hier in 1/100-Format).
+
+### Geändert (Brutto-Schätzung komplett umgebaut)
+- Statt „Gesamt-Brutto inkl. Grundgehalt" zeigt das Tool jetzt **nur das „Bereitschafts-Brutto"** — also was tatsächlich on top vom Grundgehalt durch Bereitschaftseinsätze und Zulagen dazu kommt:
+  - **Detail-Tabelle** mit jeder Position (LRE1/2/3, Rufbereitschaft, Nachtzulage) und Rechnung `Anzahl × Faktor = Betrag`.
+  - **Summenzeile** hervorgehoben.
+  - **Vergleich** „Aus Liste erwartet" vs. „Tatsächlich gezahlt", mit Nachtzulage als separater Zeile (steht ja nicht in der Liste, kommt nur aus der Abrechnung).
+  - **Ampel-Hinweis**: ✓ Passt / ⚠ Zu wenig / Etwas mehr.
+
+### Hinzugefügt
+- Pro Block-Sum jetzt auch die Beträge je Lohnart (`lre1Betrag` … `nachtBetrag`) gespeichert, dazu ein berechnetes Feld `bereitschaftsBrutto = Σ aller Bereitschafts-Lohnarten`.
+
+---
+
 ## [1.25.4] — 2026-05-22
 
 ### Behoben (Abrechnungs-Check)
