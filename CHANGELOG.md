@@ -7,6 +7,21 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.25.1] — 2026-05-22
+
+### Behoben
+- **Monat-Erkennung** in Bereitschafts-Liste lieferte fälschlich „Mai 2002" zurück — eine Template-Versionierung am Seitenrand wurde fälschlich als Abrechnungs-Monat interpretiert.
+- **`parseMonthFromText()`** komplett überarbeitet mit Prioritäts-Kette:
+  1. `Summe Monat MM.YY` (stärkster Marker in Bereitschafts-Listen) — wird zuerst gesucht
+  2. `Monat MM.YY` / `Monat: MM.2026` (allgemeiner Kontext-Marker)
+  3. `Abrechnungs-/Bereitschafts-/Zeitraum-/Periode-…` mit MM.YYYY
+  4. Freistehende MM.YYYY-Patterns
+  5. Monatsname + Jahr (z.B. „Januar 2026")
+  6. Fallback freistehendes MM.YY
+- **Jahres-Plausibilitäts-Filter**: alle Treffer ausserhalb (aktuelles Jahr -5 bis +2) werden verworfen — schließt Template-Wasserzeichen, Footer-Copyright-Daten u.ä. zuverlässig aus.
+
+---
+
 ## [1.25.0] — 2026-05-22
 
 ### Hinzugefügt

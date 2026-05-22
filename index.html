@@ -2463,7 +2463,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.25.0';
+  const APP_VERSION = '1.25.1';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -5408,22 +5408,54 @@
     return hits.filter(Boolean).length >= 2;
   }
 
-  /* ---- Monat-Detektion ---- */
+  /* ---- Monat-Detektion ----
+   * Priorisiert kontextuelle Marker ("Summe Monat 01.26" / "Abrechnung Monat 01.26")
+   * vor freistehenden Datums-Strings. Wirft alle Jahre raus, die nicht im
+   * plausiblen Bereich (heute -5 .. +2 Jahre) liegen — sonst werden Template-
+   * Wasserzeichen wie "Mai 2002" faelschlich als Abrechnungs-Monat erkannt.
+   */
   function parseMonthFromText(text) {
     const t = text.replace(/\s+/g, ' ');
-    // 1) "Januar 2026", "im Monat Januar 2026"
-    const re1 = new RegExp('\\b(' + MONAT_NAMES.join('|') + ')\\s+(20\\d{2})\\b', 'i');
-    let m = t.match(re1);
+    const currentYear = new Date().getFullYear();
+    const yrOk = y => y >= currentYear - 5 && y <= currentYear + 2;
+    let m;
+
+    // 1) "Summe Monat 01.26" — STAERKSTER Marker in Bereitschafts-Listen
+    m = t.match(/Summe\s+Monat\s+(0[1-9]|1[0-2])\.(\d{2})\b/i);
+    if (m) return { month: +m[1], year: 2000 + +m[2], src: m[0] };
+
+    // 2) "Monat 01.26" / "Monat: 01.2026" / "Abrechnung Monat ..."
+    m = t.match(/\bMonat\b[\s:.\-]*\s*(0[1-9]|1[0-2])\.(\d{2,4})\b/i);
     if (m) {
-      const idx = MONAT_NAMES.findIndex(n => n.toLowerCase() === m[1].toLowerCase());
-      if (idx >= 0) return { month: idx + 1, year: parseInt(m[2], 10), src: m[0] };
+      const y = m[2].length === 2 ? 2000 + +m[2] : +m[2];
+      if (yrOk(y)) return { month: +m[1], year: y, src: m[0] };
     }
-    // 2) MM/YYYY oder MM.YYYY
-    m = t.match(/\b(0[1-9]|1[0-2])[./](20\d{2})\b/);
-    if (m) return { month: parseInt(m[1], 10), year: parseInt(m[2], 10), src: m[0] };
-    // 3) MM.YY (kurzform)
-    m = t.match(/\b(0[1-9]|1[0-2])\.(\d{2})\b/);
-    if (m) return { month: parseInt(m[1], 10), year: 2000 + parseInt(m[2], 10), src: m[0] };
+
+    // 3) "Abrechnungszeitraum 01.2026" / "Bereitschaft Januar 2026"
+    m = t.match(/(?:Abrechnungs|Bereitschaft|Zeitraum|Periode)\w*[\s:]+(0[1-9]|1[0-2])[./](20\d{2})/i);
+    if (m && yrOk(+m[2])) return { month: +m[1], year: +m[2], src: m[0] };
+
+    // 4) "01.2026" / "01/2026" mit 4-stelligem Jahr (im plausiblen Bereich)
+    const re4 = /\b(0[1-9]|1[0-2])[./](20\d{2})\b/g;
+    while ((m = re4.exec(t)) !== null) {
+      if (yrOk(+m[2])) return { month: +m[1], year: +m[2], src: m[0] };
+    }
+
+    // 5) "Januar 2026" — aber nur wenn Jahr plausibel ist
+    const re5 = new RegExp('\\b(' + MONAT_NAMES.join('|') + ')\\s+(\\d{4})\\b', 'gi');
+    while ((m = re5.exec(t)) !== null) {
+      const y = +m[2];
+      if (!yrOk(y)) continue;
+      const idx = MONAT_NAMES.findIndex(n => n.toLowerCase() === m[1].toLowerCase());
+      if (idx >= 0) return { month: idx + 1, year: y, src: m[0] };
+    }
+
+    // 6) Fallback: freistehendes MM.YY — auch hier Jahres-Sanity-Check
+    const re6 = /\b(0[1-9]|1[0-2])\.(\d{2})\b/g;
+    while ((m = re6.exec(t)) !== null) {
+      const y = 2000 + +m[2];
+      if (yrOk(y)) return { month: +m[1], year: y, src: m[0] };
+    }
     return null;
   }
 
