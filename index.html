@@ -2463,7 +2463,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.25.1';
+  const APP_VERSION = '1.25.2';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -5472,6 +5472,50 @@
     return out;
   }
 
+  /* ---- Anzahl / Faktor / Betrag aus den letzten Zahlen identifizieren ----
+   *
+   * Wir kennen die Spaltenreihenfolge in der Abrechnung nicht (kann
+   * "Anzahl Faktor Betrag" ODER "Faktor Anzahl Betrag" sein) und auch nicht,
+   * ob die Geldwerte mit oder ohne Komma extrahiert wurden ("78,26" ↔ "7826").
+   *
+   * Loesung: wir nutzen die Invariante  Anzahl × Faktor = Betrag.
+   * Aus den letzten 3 Zahlen testen wir alle 3 Rollen-Verteilungen und
+   * akzeptieren die, bei der das Produkt-Verhaeltnis stimmt (Toleranz 2%).
+   * Erkennen wir Cents-Skalierung (Faktor + Betrag ≥ 1000 und integer),
+   * normalisieren wir Faktor + Betrag durch /100 → Euro.
+   */
+  function pickAnzahlFaktorBetrag(nums) {
+    if (!Array.isArray(nums) || nums.length < 3) return null;
+    const last3 = nums.slice(-3);
+    let best = null;
+    for (let i = 0; i < 3; i++) {
+      const betrag = last3[i];
+      const a = last3[(i + 1) % 3];
+      const b = last3[(i + 2) % 3];
+      if (betrag <= 0 || a <= 0 || b <= 0) continue;
+      const prod = a * b;
+      const tol = Math.max(0.10, betrag * 0.02);
+      if (Math.abs(prod - betrag) <= tol) {
+        const cnt = Math.min(a, b);
+        const fak = Math.max(a, b);
+        best = { cnt, fak, betrag };
+        break;
+      }
+    }
+    if (!best) {
+      // Notbehelf: erste = Anzahl, zweite = Faktor, dritte = Betrag.
+      // Mit Cents-Detection, falls die Werte gross + integer wirken.
+      best = { cnt: last3[0], fak: last3[1], betrag: last3[2] };
+    }
+    // Cents-Skalierung erkennen + normalisieren.
+    if (best.fak >= 1000 && Number.isInteger(best.fak)
+        && Number.isInteger(best.betrag) && best.betrag >= 100) {
+      best.fak    /= 100;
+      best.betrag /= 100;
+    }
+    return best;
+  }
+
   /* ---- Abrechnung parsen (block-aware) ---- */
   function parseAbrechnung(text) {
     const result = {
@@ -5503,6 +5547,20 @@
     }));
     const monthsMap = new Map();
     const _locks = {};
+
+    // Falls Label und Zahlen visuell auf zwei verschiedenen Lines stehen
+    // (PDF-Spalten-Splits), kombinieren wir die Label-Zeile mit der naechsten.
+    function effectiveLine(lines, idx) {
+      const cur = lines[idx];
+      if (parseLineNumbers(cur).length >= 3) return cur;
+      const nxt = lines[idx + 1] || '';
+      if (parseLineNumbers(nxt).length >= 3) return cur + ' ' + nxt;
+      // 2 Zeilen nach unten gucken (manchmal liegt eine Leerzeile dazwischen)
+      const nx2 = lines[idx + 2] || '';
+      if (parseLineNumbers(nx2).length >= 3) return cur + ' ' + nx2;
+      return cur;
+    }
+
     segs.forEach(seg => {
       const lines = seg.text.split('\n');
       const block = {
@@ -5514,43 +5572,43 @@
         nacht:{ std: 0, fak: 0, betrag: 0 },
         brutto: 0,
       };
-      for (const line of lines) {
-        // LRE 1/2/3 — Label "LRE1/2/3" und/oder Lohnart 243
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+
+        // LRE 1/2/3 — Label oder Lohnart 243
         const lreM = line.match(/\bLRE\s*([123])\b/i);
         if (lreM) {
           const k = 'lre' + lreM[1];
-          const nums = parseLineNumbers(line);
-          // typisches Schema: [243?, Anzahl, Faktor, Betrag]
-          if (nums.length >= 3) {
-            const last3 = nums.slice(-3);
-            block[k].cnt    = last3[0];
-            block[k].fak    = last3[1];
-            block[k].betrag = last3[2];
-          }
+          const nums = parseLineNumbers(effectiveLine(lines, li));
+          const r = pickAnzahlFaktorBetrag(nums);
+          if (r) { block[k].cnt = r.cnt; block[k].fak = r.fak; block[k].betrag = r.betrag; }
           continue;
         }
-        // Rufbereitschaft (Lohnart 314)
-        if (/Rufbereit/i.test(line) || /\b314\b/.test(line)) {
-          const nums = parseLineNumbers(line);
-          if (nums.length >= 3) {
-            const last3 = nums.slice(-3);
-            block.ruf.std = last3[0]; block.ruf.fak = last3[1]; block.ruf.betrag = last3[2];
-          }
+        // Rufbereitschaft (Lohnart 314). Breite Regex fuer Abkuerzungen.
+        if (/Ruf[\s.\-]*bereit/i.test(line) || /\b314\b/.test(line)) {
+          const nums = parseLineNumbers(effectiveLine(lines, li));
+          const r = pickAnzahlFaktorBetrag(nums);
+          if (r) { block.ruf.std = r.cnt; block.ruf.fak = r.fak; block.ruf.betrag = r.betrag; }
           continue;
         }
         // Nachtzulage (Lohnart 216)
-        if (/Nachtzulage/i.test(line) || (/\b216\b/.test(line) && /Nacht/i.test(line))) {
-          const nums = parseLineNumbers(line);
-          if (nums.length >= 3) {
-            const last3 = nums.slice(-3);
-            block.nacht.std = last3[0]; block.nacht.fak = last3[1]; block.nacht.betrag = last3[2];
-          }
+        if (/Nacht[\s.\-]*zulage/i.test(line) || (/\b216\b/.test(line) && /Nacht/i.test(line))) {
+          const nums = parseLineNumbers(effectiveLine(lines, li));
+          const r = pickAnzahlFaktorBetrag(nums);
+          if (r) { block.nacht.std = r.cnt; block.nacht.fak = r.fak; block.nacht.betrag = r.betrag; }
           continue;
         }
         // Brutto (Lohnart 699 oder Label)
         if (/\b699\b/.test(line) || /\bBrutto(?:bezuege|verdienst|lohn)?\b/i.test(line)) {
-          const nums = parseLineNumbers(line);
-          if (nums.length >= 1) block.brutto = Math.max(block.brutto, nums[nums.length - 1]);
+          const nums = parseLineNumbers(effectiveLine(lines, li));
+          if (nums.length >= 1) {
+            // Brutto: nimm den groessten der letzten 3 Werte (Total > Faktor/Anzahl).
+            const cand = nums.slice(-3);
+            let big = Math.max.apply(null, cand);
+            // Cents-Skalierung: wenn Integer + ungewoehnlich gross → /100
+            if (big > 10000 && Number.isInteger(big)) big = big / 100;
+            block.brutto = Math.max(block.brutto, big);
+          }
         }
       }
       const key = String(seg.month).padStart(2, '0') + '.' + String(seg.year).slice(-2);
@@ -5558,12 +5616,14 @@
         monthsMap.set(key, { monthKey: key, month: seg.month, year: seg.year, blocks: [] });
       }
       monthsMap.get(key).blocks.push(block);
-      // Tarif-Saetze aus erstem Block mit Werten lernen
-      if (block.lre1.fak && !_locks.lre1)  { result.rates.LRE1        = block.lre1.fak;  _locks.lre1  = true; }
-      if (block.lre2.fak && !_locks.lre2)  { result.rates.LRE2        = block.lre2.fak;  _locks.lre2  = true; }
-      if (block.lre3.fak && !_locks.lre3)  { result.rates.LRE3        = block.lre3.fak;  _locks.lre3  = true; }
-      if (block.ruf.fak  && !_locks.ruf)   { result.rates.Rufbereit   = block.ruf.fak;   _locks.ruf   = true; }
-      if (block.nacht.fak&& !_locks.nacht) { result.rates.Nachtzulage = block.nacht.fak; _locks.nacht = true; }
+      // Tarif-Saetze aus erstem Block mit Werten lernen.
+      // Nur plausible Faktoren akzeptieren (0,50 € .. 999 €).
+      function rateOk(v) { return v >= 0.5 && v < 1000; }
+      if (block.lre1.fak && !_locks.lre1  && rateOk(block.lre1.fak))  { result.rates.LRE1        = block.lre1.fak;  _locks.lre1  = true; }
+      if (block.lre2.fak && !_locks.lre2  && rateOk(block.lre2.fak))  { result.rates.LRE2        = block.lre2.fak;  _locks.lre2  = true; }
+      if (block.lre3.fak && !_locks.lre3  && rateOk(block.lre3.fak))  { result.rates.LRE3        = block.lre3.fak;  _locks.lre3  = true; }
+      if (block.ruf.fak  && !_locks.ruf   && rateOk(block.ruf.fak))   { result.rates.Rufbereit   = block.ruf.fak;   _locks.ruf   = true; }
+      if (block.nacht.fak&& !_locks.nacht && rateOk(block.nacht.fak)) { result.rates.Nachtzulage = block.nacht.fak; _locks.nacht = true; }
     });
     for (const monthObj of monthsMap.values()) {
       const sum = { lre1Cnt:0, lre2Cnt:0, lre3Cnt:0, rufStd:0, nachtStd:0, brutto:0 };

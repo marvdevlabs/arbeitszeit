@@ -7,6 +7,17 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.25.2] — 2026-05-22
+
+### Behoben
+- **Abrechnungs-Werte falsch zugeordnet**: LRE-Zeilen wurden mit dem Faktor als Anzahl interpretiert (z.B. „7826 × LRE1" statt „2 × LRE1, Faktor 78,26 €"). Ursache: feste Annahme über Spaltenreihenfolge `[Anzahl, Faktor, Betrag]` — real ist's offenbar `[Faktor, Anzahl, Betrag]`. Außerdem extrahierte pdf.js Geldwerte teilweise als ganzzahlige Cents („7826" statt „78,26").
+- **Neuer `pickAnzahlFaktorBetrag()`-Helper** nutzt die Invariante  Anzahl × Faktor = Betrag — Spaltenreihenfolge wird damit egal. Cents-Skalierung (Faktor + Betrag ≥ 1000, integer) wird automatisch erkannt und durch /100 normalisiert.
+- **Rufbereitschaft & Nachtzulage** wurden teilweise nicht erkannt, weil Label und Zahlen visuell auf verschiedenen Zeilen lagen. Neuer **Multi-Line-Fallback** scannt bis zu 2 Folgezeilen, wenn die Label-Zeile selbst keine Zahlen enthält. Regex breiter: `Ruf[\s.\-]*bereit`, `Nacht[\s.\-]*zulage`.
+- **Tarif-Sätze**: nur noch plausible Faktoren (0,50 € .. 999 €) übernommen, damit verirrte große Zahlen die Default-Sätze nicht überschreiben.
+- **Brutto-Erkennung** ebenfalls mit Cents-Normalisierung.
+
+---
+
 ## [1.25.1] — 2026-05-22
 
 ### Behoben
