@@ -7,6 +7,23 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.36.0] — 2026-07-10
+
+### Neu
+- **Feld „Steuerfreie Bezüge pro Monat"** in den Personal-Daten (bAV / VBL / Fahrradleasing-Bruttoverzicht). Optional — wenn gesetzt, wird der Betrag vor LSt/KiSt/Soli/SV vom Bemessungs-Brutto abgezogen.
+
+### Verbessert
+- **PAP-konforme Rundungen** in `abrTarif32a`: Eingabe wird auf ganze Euro abgerundet, Ausgabe auf ganze Euro (Math.floor) — wie im offiziellen BMF-Programmablaufplan.
+- **Mindest-Vorsorgepauschale** nach §39b Abs. 4 EStG ergänzt: KV-Anteil = min(12 % Brutto, 3.000 € bei StKl III / 1.900 € sonst) + voller RV-Anteil. Es gilt der höhere Wert aus tatsächlichen AN-Beiträgen und Mindest-VSP.
+
+### Genauigkeit
+Verifiziert gegen reale Abrechnungen (StKl III, 1,0 Kind, NW, TK KV+2,7 %):
+- **Mai-Regel-Muster (Grundgehalt 3.424,52 €)**: **0,01 %** Abweichung (21 Cent!)
+- **Voll-Monat Januar 4.037,81 €**: **0,42 %** Abweichung (vorher 1,05 %)
+- Voraussetzung für die pfennig-genaue Prognose ist das korrekte Setzen des „Steuerfreie Bezüge"-Felds (bei DB-Mitarbeitern typ. bAV-Umwandlung ~40–50 €/Monat).
+
+---
+
 ## [1.35.0] — 2026-07-10
 
 ### Behoben (Netto-Berechnung deutlich präziser)

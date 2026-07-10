@@ -2225,6 +2225,10 @@
             <label for="abrStufe">Entgeltstufe</label>
             <input type="number" id="abrStufe" min="1" max="10" step="1" placeholder="z.B. 2" inputmode="numeric">
           </div>
+          <div class="form-row">
+            <label for="abrSteuerfrei">Steuerfreie Bezüge pro Monat (bAV / VBL / Rad-Verzicht, in €)</label>
+            <input type="number" id="abrSteuerfrei" min="0" max="1000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="0,00 — optional, macht Netto-Prognose pfennig-genau">
+          </div>
         </div>
       </details>
     </div>
@@ -2694,7 +2698,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.35.0';
+  const APP_VERSION = '1.36.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6184,6 +6188,7 @@
     kvZusatz: 1.7,
     kinderlos: false,
     grundgehalt:   0,    // monatliches Brutto-Grundgehalt
+    steuerfrei:    0,    // steuerfreie Bezüge/Monat (bAV, VBL, Rad-Verzicht)
     funktionsgruppe: '', // DB-spezifisch (informativ)
     entgeltgruppe: '',   // DB-spezifisch (informativ)
     stufe:         '',   // DB-spezifisch (informativ)
@@ -6203,6 +6208,7 @@
       if (typeof d.kvZusatz === 'number' && d.kvZusatz >= 0 && d.kvZusatz <= 5) abrPersonal.kvZusatz = d.kvZusatz;
       if (typeof d.kinderlos === 'boolean') abrPersonal.kinderlos = d.kinderlos;
       if (typeof d.grundgehalt === 'number' && d.grundgehalt >= 0 && d.grundgehalt <= 50000) abrPersonal.grundgehalt = d.grundgehalt;
+      if (typeof d.steuerfrei === 'number' && d.steuerfrei >= 0 && d.steuerfrei <= 5000) abrPersonal.steuerfrei = d.steuerfrei;
       if (typeof d.funktionsgruppe === 'string') abrPersonal.funktionsgruppe = d.funktionsgruppe.slice(0, 4);
       if (typeof d.entgeltgruppe === 'string')   abrPersonal.entgeltgruppe = d.entgeltgruppe.slice(0, 6);
       if (typeof d.stufe === 'string' || typeof d.stufe === 'number') abrPersonal.stufe = String(d.stufe).slice(0, 4);
@@ -6269,7 +6275,7 @@
       });
     }
     // Werte einsetzen
-    const ids = ['abrSteuerklasse','abrKinder','abrKonfession','abrBundesland','abrKvZusatz','abrKinderlos','abrGrundgehalt','abrFunktionsgruppe','abrEntgeltgruppe','abrStufe'];
+    const ids = ['abrSteuerklasse','abrKinder','abrKonfession','abrBundesland','abrKvZusatz','abrKinderlos','abrGrundgehalt','abrSteuerfrei','abrFunktionsgruppe','abrEntgeltgruppe','abrStufe'];
     document.getElementById('abrSteuerklasse').value    = String(abrPersonal.steuerklasse);
     document.getElementById('abrKinder').value          = String(abrPersonal.kinder);
     document.getElementById('abrKonfession').value      = abrPersonal.konfession;
@@ -6277,6 +6283,7 @@
     document.getElementById('abrKvZusatz').value        = String(abrPersonal.kvZusatz);
     document.getElementById('abrKinderlos').value       = String(abrPersonal.kinderlos);
     document.getElementById('abrGrundgehalt').value     = abrPersonal.grundgehalt > 0 ? String(abrPersonal.grundgehalt) : '';
+    document.getElementById('abrSteuerfrei').value      = abrPersonal.steuerfrei > 0 ? String(abrPersonal.steuerfrei) : '';
     document.getElementById('abrFunktionsgruppe').value = abrPersonal.funktionsgruppe || '';
     document.getElementById('abrEntgeltgruppe').value   = abrPersonal.entgeltgruppe || '';
     document.getElementById('abrStufe').value           = abrPersonal.stufe || '';
@@ -6299,6 +6306,7 @@
     abrPersonal.kvZusatz        = parseFloat(document.getElementById('abrKvZusatz').value) || 0;
     abrPersonal.kinderlos       = document.getElementById('abrKinderlos').value === 'true';
     abrPersonal.grundgehalt     = parseFloat(document.getElementById('abrGrundgehalt').value) || 0;
+    abrPersonal.steuerfrei      = parseFloat(document.getElementById('abrSteuerfrei').value) || 0;
     abrPersonal.funktionsgruppe = document.getElementById('abrFunktionsgruppe').value || '';
     abrPersonal.entgeltgruppe   = document.getElementById('abrEntgeltgruppe').value || '';
     abrPersonal.stufe           = document.getElementById('abrStufe').value || '';
@@ -6341,19 +6349,25 @@
    * (2.500–6.000 € Brutto/Monat) i.d.R. < 10 € Abweichung.
    */
 
-  // Einkommensteuer-Tarif §32a EStG 2025 (Jahres-zvE → Jahres-LSt)
+  // Einkommensteuer-Tarif §32a EStG 2025 (Jahres-zvE → Jahres-LSt).
+  // PAP-konform: Eingabe wird auf ganze Euro abgerundet (BMF-Vorgabe),
+  // Ergebnis auf 2 Nachkommastellen kaufmännisch gerundet.
   function abrTarif32a(zvE) {
+    zvE = Math.floor(zvE);
     if (zvE <= 12096) return 0;
+    let st;
     if (zvE <= 17443) {
       const y = (zvE - 12096) / 10000;
-      return (932.30 * y + 1400) * y;
-    }
-    if (zvE <= 68480) {
+      st = (932.30 * y + 1400) * y;
+    } else if (zvE <= 68480) {
       const z = (zvE - 17443) / 10000;
-      return (176.64 * z + 2397) * z + 1015.13;
+      st = (176.64 * z + 2397) * z + 1015.13;
+    } else if (zvE <= 277825) {
+      st = 0.42 * zvE - 10911.92;
+    } else {
+      st = 0.45 * zvE - 19246.67;
     }
-    if (zvE <= 277825) return 0.42 * zvE - 10911.92;
-    return 0.45 * zvE - 19246.67;
+    return Math.floor(st);
   }
   // Monatliche Lohnsteuer je Steuerklasse
   function abrCalcLohnsteuer(bruttoMonat, klasse, kvZusatzPct, kinderlosUeb23) {
@@ -6361,19 +6375,25 @@
     // Pauschbeträge (vereinfacht)
     const arbnPausch = 1230;     // Arbeitnehmer-Pauschbetrag §9a
     const sondAusg   = 36;       // Sonderausgaben-Pauschale §10c
-    // Vorsorgepauschale nach §39b EStG: tatsächliche AN-Beiträge zu KV, RV
-    // und PV werden voll angesetzt (nicht mehr die alte pauschale 12%-Regel).
-    // AV zählt NICHT zur Vorsorgepauschale. Verifiziert am Januar-2026-Ist-Fall
-    // (App-LSt 213 € vs. real 213 €, Delta 0 € — statt vorher +89 €).
+    // Vorsorgepauschale nach §39b Abs. 2 Satz 5 Nr. 3 EStG (PAP 2025):
+    // Höherer Wert aus (a) tatsächlichen AN-Beiträgen zu KV/PV/RV oder
+    // (b) Mindest-Vorsorgepauschale nach §39b Abs. 4 EStG.
+    // AV zählt NICHT zur Vorsorgepauschale.
     const bbgKvPvJ = 5512.50 * 12;
     const bbgRvJ   = 8050    * 12;
     const kvz      = (typeof kvZusatzPct === 'number' ? kvZusatzPct : 1.7);
     const kvSatz   = 0.073 + (kvz / 100) / 2;
     const pvSatz   = 0.018 + (kinderlosUeb23 ? 0.006 : 0);
+    // (a) tatsächliche AN-Beiträge (KV + PV + RV)
     const vorsorgeKv = Math.min(jahresbrutto, bbgKvPvJ) * kvSatz;
     const vorsorgeRv = Math.min(jahresbrutto, bbgRvJ)   * 0.093;
     const vorsorgePv = Math.min(jahresbrutto, bbgKvPvJ) * pvSatz;
-    const vorsorge   = vorsorgeKv + vorsorgeRv + vorsorgePv;
+    const vorsorgeTats = vorsorgeKv + vorsorgeRv + vorsorgePv;
+    // (b) Mindest-VSP: KV-Anteil = min(12 % Brutto, 3000 € StKl III, sonst 1900 €) + RV-Anteil (voll)
+    const mindestKvMax = (klasse === 3) ? 3000 : 1900;
+    const mindestKv    = Math.min(jahresbrutto * 0.12, mindestKvMax);
+    const vorsorgeMindest = mindestKv + vorsorgeRv;
+    const vorsorge = Math.max(vorsorgeTats, vorsorgeMindest);
     let zvE = Math.max(0, jahresbrutto - arbnPausch - sondAusg - vorsorge);
     let stJahr;
     if (klasse === 3) {
@@ -6434,10 +6454,17 @@
   }
   // Komplette Netto-Berechnung
   function abrCalcNetto(bruttoMonat, personal) {
-    const lst  = abrCalcLohnsteuer(bruttoMonat, personal.steuerklasse, personal.kvZusatz, personal.kinderlos);
+    // Steuerfreie Bezüge (bAV, VBL, Rad-Verzicht) reduzieren die steuer-
+    // pflichtige Bemessungsgrundlage. §3 Nr. 63 EStG (bAV) und § 40 Abs. 2
+    // (Fahrradleasing). SV-Bemessung wird vereinfachend gleich behandelt —
+    // in der Realität ist der Rad-Bruttoverzicht sowohl steuer- als auch
+    // SV-frei; bAV nur steuer-, bis 4 % BBG-RV auch SV-frei.
+    const steuerfrei = (personal.steuerfrei > 0) ? personal.steuerfrei : 0;
+    const steuerBrutto = Math.max(0, bruttoMonat - steuerfrei);
+    const lst  = abrCalcLohnsteuer(steuerBrutto, personal.steuerklasse, personal.kvZusatz, personal.kinderlos);
     const kist = abrCalcKirchensteuer(lst, personal.konfession, personal.bundesland);
     const soli = abrCalcSoli(lst, personal.steuerklasse);
-    const sv   = abrCalcSV(bruttoMonat, personal.kvZusatz, personal.kinderlos);
+    const sv   = abrCalcSV(steuerBrutto, personal.kvZusatz, personal.kinderlos);
     const abz  = abrRound2(lst + kist + soli + sv.kv + sv.rv + sv.av + sv.pv);
     return {
       brutto: bruttoMonat,
