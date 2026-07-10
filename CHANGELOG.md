@@ -7,6 +7,19 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.33.0] — 2026-07-10
+
+### Geändert
+- **Persönliche Daten wandern auf den Home-Screen** — direkt unter das Tool-Grid als globale Konfig-Karte. Vorher versteckt in Tool 2. Wird jetzt einmal ausgefüllt und gilt für Tool 2 und Tool 3 gleichermaßen.
+- **Gate**: Tool 2 (Abrechnung prüfen) und Tool 3 (Nächste Abrechnung) sind nur erreichbar, wenn **Grundgehalt + Bundesland** gesetzt sind. Fehlt was, springt der Fokus auf die Personal-Karte, sie öffnet sich, pulsiert kurz rot, und der Status zeigt „Bitte erst ausfüllen — dann geht's automatisch weiter". Sobald Werte gesetzt sind, navigiert die App **selbst** zum eigentlich gewünschten Tool.
+- **Tool 1 (Tageserfassung) bleibt uneingeschränkt** erreichbar — keine Personal-Daten nötig.
+
+### Behoben
+- **Zahlen mit Komma statt Punkt** in Cross-Check-Warnungen: `Rufbereitschaft: PVN 141.00 h ≠ Ber 141.00 h` → `PVN 141,00 h ≠ Ber 141,00 h`. Deutsche Dezimal-Konvention konsequent überall.
+- Zahleneingaben in Personal-Daten und „Meine tariflichen Sätze" mit `lang="de"` versehen — Browser rendert dann die Zwischen-Werte auch mit Komma.
+
+---
+
 ## [1.32.0] — 2026-07-10
 
 ### Neu — Tool 3 „Nächste Abrechnung" (Brutto-/Netto-Vorhersage)

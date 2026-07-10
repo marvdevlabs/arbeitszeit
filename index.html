@@ -470,6 +470,18 @@
     margin-right: 6px;
   }
   .abr-personal-status.set { color: var(--text-secondary); }
+  .abr-personal-status.gate-warn {
+    color: var(--db-red); font-weight: 700;
+  }
+  @keyframes gatePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(236,0,22,0.55); }
+    70%  { box-shadow: 0 0 0 12px rgba(236,0,22,0); }
+    100% { box-shadow: 0 0 0 0 rgba(236,0,22,0); }
+  }
+  .abr-personal-card.gate-pulse {
+    animation: gatePulse 1.1s ease-out 2;
+    border-color: var(--db-red);
+  }
   .abr-personal-form {
     padding: 12px 14px;
     border-top: 1px solid var(--border);
@@ -2132,6 +2144,89 @@
           <div class="tool-card-desc">Bereitschafts-Liste + eTime-Auswertung hochladen — Brutto der nächsten Abrechnung wird direkt geschätzt.</div>
         </button>
       </div>
+
+      <!-- ====== Persönliche Daten (Pflicht für Tool 2 & 3) ====== -->
+      <details class="abr-personal-card" id="abrPersonalCard">
+        <summary>
+          <span class="abr-personal-title">Persönliche Daten</span>
+          <span class="abr-personal-status" id="abrPersonalSummary">Noch nicht eingestellt — bitte einmalig ausfüllen</span>
+        </summary>
+        <div class="abr-personal-form">
+          <div class="abr-hint" style="margin-bottom:8px;">
+            Pflicht für <strong>Abrechnung prüfen</strong> und <strong>Nächste Abrechnung</strong>. Wird nur lokal im Browser gespeichert — keine Übertragung, kein Server.
+          </div>
+          <div class="form-row">
+            <label for="abrGrundgehalt">Monatliches Grundgehalt (brutto, in €)</label>
+            <input type="number" id="abrGrundgehalt" min="0" max="20000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="z.B. 3570,49">
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrSteuerklasse">Steuerklasse</label>
+              <select class="form-select" id="abrSteuerklasse">
+                <option value="1">I (ledig)</option>
+                <option value="2">II (alleinerz.)</option>
+                <option value="3">III (verh. Hauptverd.)</option>
+                <option value="4">IV (verh. gleich)</option>
+                <option value="5">V (verh. Nebenverd.)</option>
+                <option value="6">VI (Zweitjob)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="abrKinder">Kinderfreibeträge</label>
+              <input type="number" id="abrKinder" min="0" max="8" step="0.5" value="0" inputmode="decimal" lang="de">
+            </div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrKonfession">Konfession</label>
+              <select class="form-select" id="abrKonfession">
+                <option value="keine">Keine</option>
+                <option value="ev">Evangelisch</option>
+                <option value="rk">Römisch-katholisch</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="abrBundesland">Bundesland</label>
+              <select class="form-select" id="abrBundesland"></select>
+            </div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrKvZusatz">KV-Zusatzbeitrag (%)</label>
+              <input type="number" id="abrKvZusatz" min="0" max="5" step="0.05" value="1.7" inputmode="decimal" lang="de">
+            </div>
+            <div class="form-row">
+              <label for="abrKinderlos">Kinderlos &gt; 23?</label>
+              <select class="form-select" id="abrKinderlos">
+                <option value="false">Nein</option>
+                <option value="true">Ja (+0,6 % PV)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row">
+              <label for="abrFunktionsgruppe">Funktionsgruppe (DB)</label>
+              <select class="form-select" id="abrFunktionsgruppe">
+                <option value="">— optional —</option>
+                <option value="1">FGr 1 (Werker, Servicetec, …)</option>
+                <option value="2">FGr 2</option>
+                <option value="3">FGr 3</option>
+                <option value="4">FGr 4</option>
+                <option value="5">FGr 5</option>
+                <option value="6">FGr 6</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="abrEntgeltgruppe">Entgeltgruppe</label>
+              <input type="text" id="abrEntgeltgruppe" maxlength="6" placeholder="z.B. 107">
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="abrStufe">Entgeltstufe</label>
+            <input type="number" id="abrStufe" min="1" max="10" step="1" placeholder="z.B. 2" inputmode="numeric">
+          </div>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -2257,90 +2352,6 @@
         Monatsabgleich und vergleicht die ausgezahlten LRE-Werte mit der Liste. Mehrere Monate
         können nacheinander geprüft werden.
       </div>
-
-      <!-- ====== Persönliche Daten (für Netto-Berechnung) ====== -->
-      <details class="abr-personal-card" id="abrPersonalCard">
-        <summary>
-          <span class="abr-personal-title">Persönliche Daten</span>
-          <span class="abr-personal-status" id="abrPersonalSummary">Noch nicht eingestellt — bitte einmalig ausfüllen</span>
-        </summary>
-        <div class="abr-personal-form">
-          <div class="form-row">
-            <label for="abrGrundgehalt">Monatliches Grundgehalt (brutto, in €)</label>
-            <input type="number" id="abrGrundgehalt" min="0" max="20000" step="0.01" value="" inputmode="decimal" placeholder="z.B. 3570,49">
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrSteuerklasse">Steuerklasse</label>
-              <select class="form-select" id="abrSteuerklasse">
-                <option value="1">I (ledig)</option>
-                <option value="2">II (alleinerz.)</option>
-                <option value="3">III (verh. Hauptverd.)</option>
-                <option value="4">IV (verh. gleich)</option>
-                <option value="5">V (verh. Nebenverd.)</option>
-                <option value="6">VI (Zweitjob)</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrKinder">Kinderfreibeträge</label>
-              <input type="number" id="abrKinder" min="0" max="8" step="0.5" value="0" inputmode="decimal">
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrKonfession">Konfession</label>
-              <select class="form-select" id="abrKonfession">
-                <option value="keine">Keine</option>
-                <option value="ev">Evangelisch</option>
-                <option value="rk">Römisch-katholisch</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrBundesland">Bundesland</label>
-              <select class="form-select" id="abrBundesland"></select>
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrKvZusatz">KV-Zusatzbeitrag (%)</label>
-              <input type="number" id="abrKvZusatz" min="0" max="5" step="0.05" value="1.7" inputmode="decimal">
-            </div>
-            <div class="form-row">
-              <label for="abrKinderlos">Kinderlos &gt; 23?</label>
-              <select class="form-select" id="abrKinderlos">
-                <option value="false">Nein</option>
-                <option value="true">Ja (+0,6 % PV)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrFunktionsgruppe">Funktionsgruppe (DB)</label>
-              <select class="form-select" id="abrFunktionsgruppe">
-                <option value="">— optional —</option>
-                <option value="1">FGr 1 (Werker, Servicetec, …)</option>
-                <option value="2">FGr 2</option>
-                <option value="3">FGr 3</option>
-                <option value="4">FGr 4</option>
-                <option value="5">FGr 5</option>
-                <option value="6">FGr 6</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrEntgeltgruppe">Entgeltgruppe</label>
-              <input type="text" id="abrEntgeltgruppe" maxlength="6" placeholder="z.B. 107">
-            </div>
-          </div>
-          <div class="form-row">
-            <label for="abrStufe">Entgeltstufe</label>
-            <input type="number" id="abrStufe" min="1" max="10" step="1" placeholder="z.B. 2" inputmode="numeric">
-          </div>
-          <div class="abr-hint" style="margin-top:6px;">
-            Diese Daten werden nur lokal in deinem Browser gespeichert. Keine Übertragung nach außen.
-            Das Grundgehalt trägst du bitte selbst ein — Tarif-Tabellen sind aus Datenschutz-Gründen nicht im Code hinterlegt.
-          </div>
-        </div>
-      </details>
 
       <div class="upload-grid">
         <label class="upload-slot" id="abrSlotAbrechnung">
@@ -2683,7 +2694,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.32.0';
+  const APP_VERSION = '1.33.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -4617,6 +4628,12 @@
   /* ===== Tool-Switcher ===== */
   function showTool(name) {
     if (!['home', 'tageserfassung', 'abrechnung', 'prognose'].includes(name)) name = 'home';
+    // Gate: Tool 2 (abrechnung) + Tool 3 (prognose) brauchen komplette
+    // Personal-Daten. Tool 1 (tageserfassung) darf immer.
+    if ((name === 'abrechnung' || name === 'prognose') && !abrPersonalGateOk()) {
+      showPersonalGateHint(name);
+      return;
+    }
     const switchedToTageserfassung = (name === 'tageserfassung' && currentTool !== 'tageserfassung');
     currentTool = name;
     const tHome = document.getElementById('tool-home');
@@ -6200,6 +6217,29 @@
   function abrPersonalHasGrundgehalt() {
     return abrPersonal.grundgehalt > 0;
   }
+  // Gate: Personal-Daten sind vollstaendig fuer Tool 2 + Tool 3
+  // (Bundesland ODER Grundgehalt einzeln bringt nichts — beide zusammen).
+  function abrPersonalGateOk() {
+    return abrPersonalIsComplete() && abrPersonalHasGrundgehalt();
+  }
+  // Merker, welches Tool angesteuert wurde als das Gate blockte —
+  // sobald Personal-Daten komplett sind, dorthin auto-navigieren.
+  let _pendingToolAfterGate = null;
+  function showPersonalGateHint(intendedTool) {
+    _pendingToolAfterGate = intendedTool;
+    const card = document.getElementById('abrPersonalCard');
+    if (card) {
+      card.setAttribute('open', '');
+      card.classList.add('gate-pulse');
+      setTimeout(() => card.classList.remove('gate-pulse'), 2200);
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const summary = document.getElementById('abrPersonalSummary');
+    if (summary) {
+      summary.textContent = 'Bitte erst Grundgehalt + Bundesland ausfüllen — dann geht\'s automatisch weiter.';
+      summary.classList.add('gate-warn');
+    }
+  }
   function abrPersonalSummary() {
     if (!abrPersonalIsComplete()) return 'Noch nicht eingestellt — bitte einmalig ausfüllen';
     const stRoman = ['','I','II','III','IV','V','VI'][abrPersonal.steuerklasse] || abrPersonal.steuerklasse;
@@ -6214,6 +6254,8 @@
     if (!el) return;
     el.textContent = abrPersonalSummary();
     el.classList.toggle('set', abrPersonalIsComplete());
+    // Warn-Style entfernen sobald wieder alles gut ist
+    if (abrPersonalGateOk()) el.classList.remove('gate-warn');
   }
   function initAbrPersonalForm() {
     // Bundesland-Select fuellen (gleiche Liste wie Tageserfassung).
@@ -6266,6 +6308,14 @@
     // UND jetzt complete ist → automatisch in den Money-View springen.
     if (abrState.pendingMoney && abrPersonalIsComplete() && abrPersonalHasGrundgehalt()) {
       abrShowMoney();
+      return;
+    }
+    // Gate: Wenn ein Tool anvisiert war (Tool 2 / 3) und Personal-Daten jetzt
+    // komplett sind → automatisch dorthin springen.
+    if (_pendingToolAfterGate && abrPersonalGateOk()) {
+      const target = _pendingToolAfterGate;
+      _pendingToolAfterGate = null;
+      showTool(target);
       return;
     }
     // Re-render — wenn schon geparst, einfach nochmal rendern; sonst idle.
@@ -7243,7 +7293,7 @@
       if (p.lre2Cnt !== b.lre2Cnt) crossWarnings.push('LRE 2: PVN ' + p.lre2Cnt + ' ≠ Ber ' + b.lre2Cnt);
       if (p.lre3Cnt !== b.lre3Cnt) crossWarnings.push('LRE 3: PVN ' + p.lre3Cnt + ' ≠ Ber ' + b.lre3Cnt);
       if (Math.abs(p.rufStd - b.zulageBerStd) > 0.5)
-        crossWarnings.push('Rufbereitschaft: PVN ' + p.rufStd + ' h ≠ Ber ' + b.zulageBerStd.toFixed(2) + ' h');
+        crossWarnings.push('Rufbereitschaft: PVN ' + abrFmtNum(p.rufStd, 2) + ' h ≠ Ber ' + abrFmtNum(b.zulageBerStd, 2) + ' h');
     }
 
     // Layout-Fehlermeldungen sammeln
