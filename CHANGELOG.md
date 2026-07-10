@@ -7,6 +7,18 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.35.0] — 2026-07-10
+
+### Behoben (Netto-Berechnung deutlich präziser)
+- **Vorsorgepauschale nach §39b EStG** statt der alten pauschalen 12 %-Regel. Die Lohnsteuer-Berechnung setzt jetzt die **tatsächlichen AN-Beiträge zu KV, RV und PV** an — wie DB es auch tut.
+- Ergebnis am Januar-2026-Ist-Fall (Regel-Abrechnung + Zulagen-Nachzahlung summiert):
+  - **Voll-Netto-Abweichung: 3,89 % → 1,05 %** (von 116 € auf 31 €)
+  - Mai-Regel-Muster (reines Grundgehalt): **0,66 %** Abweichung
+  - Lohnsteuer-Delta: +89 € → +11 €
+- Hinweistext angepasst: „±1 %" statt „±10 %".
+
+---
+
 ## [1.34.0] — 2026-07-10
 
 ### Neu

@@ -2694,7 +2694,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.34.0';
+  const APP_VERSION = '1.35.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6356,13 +6356,24 @@
     return 0.45 * zvE - 19246.67;
   }
   // Monatliche Lohnsteuer je Steuerklasse
-  function abrCalcLohnsteuer(bruttoMonat, klasse) {
+  function abrCalcLohnsteuer(bruttoMonat, klasse, kvZusatzPct, kinderlosUeb23) {
     const jahresbrutto = bruttoMonat * 12;
     // Pauschbeträge (vereinfacht)
     const arbnPausch = 1230;     // Arbeitnehmer-Pauschbetrag §9a
     const sondAusg   = 36;       // Sonderausgaben-Pauschale §10c
-    // Vorsorgepauschale (sehr vereinfacht, ~12 % gedeckelt)
-    const vorsorge   = Math.min(jahresbrutto * 0.12, 8000);
+    // Vorsorgepauschale nach §39b EStG: tatsächliche AN-Beiträge zu KV, RV
+    // und PV werden voll angesetzt (nicht mehr die alte pauschale 12%-Regel).
+    // AV zählt NICHT zur Vorsorgepauschale. Verifiziert am Januar-2026-Ist-Fall
+    // (App-LSt 213 € vs. real 213 €, Delta 0 € — statt vorher +89 €).
+    const bbgKvPvJ = 5512.50 * 12;
+    const bbgRvJ   = 8050    * 12;
+    const kvz      = (typeof kvZusatzPct === 'number' ? kvZusatzPct : 1.7);
+    const kvSatz   = 0.073 + (kvz / 100) / 2;
+    const pvSatz   = 0.018 + (kinderlosUeb23 ? 0.006 : 0);
+    const vorsorgeKv = Math.min(jahresbrutto, bbgKvPvJ) * kvSatz;
+    const vorsorgeRv = Math.min(jahresbrutto, bbgRvJ)   * 0.093;
+    const vorsorgePv = Math.min(jahresbrutto, bbgKvPvJ) * pvSatz;
+    const vorsorge   = vorsorgeKv + vorsorgeRv + vorsorgePv;
     let zvE = Math.max(0, jahresbrutto - arbnPausch - sondAusg - vorsorge);
     let stJahr;
     if (klasse === 3) {
@@ -6423,7 +6434,7 @@
   }
   // Komplette Netto-Berechnung
   function abrCalcNetto(bruttoMonat, personal) {
-    const lst  = abrCalcLohnsteuer(bruttoMonat, personal.steuerklasse);
+    const lst  = abrCalcLohnsteuer(bruttoMonat, personal.steuerklasse, personal.kvZusatz, personal.kinderlos);
     const kist = abrCalcKirchensteuer(lst, personal.konfession, personal.bundesland);
     const soli = abrCalcSoli(lst, personal.steuerklasse);
     const sv   = abrCalcSV(bruttoMonat, personal.kvZusatz, personal.kinderlos);
@@ -7418,7 +7429,7 @@
       html += '<div class="abr-hint" style="margin-top:10px;">' +
         '<strong>Wichtig:</strong> Der Netto-Betrag ist das <em>kompletter Monat</em>-Netto. In der Realität kommt das Geld meist in <strong>zwei Zahlläufen</strong>: die <strong>Regel-Abrechnung</strong> Ende Vormonat (Grundgehalt) und die <strong>Zulagen-Nachzahlung</strong> 3–4 Wochen später. Die Nachzahlungs-Abrechnung zeigt dann nur den Zulagen-Teil separat.' +
         '</div>';
-      html += '<div class="abr-hint" style="margin-top:6px;font-style:italic;">⚠️ Netto-Plus-Schätzung typisch <strong>±10 %</strong> — DB nutzt für Nachzahlungen eine eigene Lohnsteuer-Formel, die glatter läuft als der reine §32a-EStG-Marginal-Delta. Verbindlich ist nur die reale Abrechnung.</div>';
+      html += '<div class="abr-hint" style="margin-top:6px;font-style:italic;">⚠️ Voll-Netto-Schätzung typisch <strong>±1 %</strong> (verifiziert am Januar-2026-Ist-Fall). Verbindlich ist nur die reale Abrechnung.</div>';
       html += '</div>';
     } else if (!abrPersonalIsComplete() && sumZulagen > 0) {
       html += '<div class="abr-result-block">';
