@@ -7,6 +7,20 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.32.0] — 2026-07-10
+
+### Neu — Tool 3 „Nächste Abrechnung" (Brutto-/Netto-Vorhersage)
+
+- **Neues drittes Werkzeug** auf dem Home-Screen: schätzt das erwartete Brutto (und Netto) der kommenden Abrechnung, bevor sie kommt. Retrospektive vs. prospektive Sicht sauber getrennt — Tool 2 vergleicht Ist, Tool 3 sagt voraus.
+- **Zwei Upload-Slots**: Bereitschafts-Liste (bekannt) + **eTime-Personalverwendungsnachweis** (PVN, neu). Mindestens eine Datei reicht, beide zusammen sind vollständiger.
+- **PVN-Parser**: liest die deterministische `Summen Nebenbezugsarten`-Zeile — LRE 1/2/3, Rufbereitschaft, Nacht-, Sonntag-, Samstag-, Feiertag- und Überzeitzulage.
+- **Cross-Check**: PVN vs. Bereitschafts-Liste — Abweichungen bei LRE-Anzahlen oder Rufbereitschaftsstunden werden angezeigt.
+- **Meine tariflichen Sätze**: 9 Faktoren überschreibbar in einer eigenen Card, per LocalStorage persistent. Defaults sind die 2026er DB-InfraGo-Sätze (EG 107/2): LRE1 78,26 · LRE2 51,22 · LRE3 29,31 · Ruf 2,85 · Nacht 3,73 · Sonntag 6,31 · Samstag 0,65 · Feiertag 6,90 · Überzeit 4,92.
+- **Netto-Berechnung** integriert: sobald Personal-Daten + Grundgehalt aus Tool 2 gesetzt sind, wird das erwartete Netto per §32a EStG + SV mit-berechnet und in zwei Spalten (ohne / mit Zulagen) plus marginaler Netto-Quote gezeigt.
+- **Tiefer Link**: `#prognose` öffnet das Tool direkt.
+
+---
+
 ## [1.31.1] — 2026-05-22
 
 ### Behoben

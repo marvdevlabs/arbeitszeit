@@ -2122,6 +2122,15 @@
           </div>
           <div class="tool-card-desc">Abrechnung + Bereitschafts-Liste hochladen, automatisch vergleichen, Brutto und Netto berechnen. Alles offline.</div>
         </button>
+        <button type="button" class="tool-card" onclick="showTool('prognose')">
+          <div class="tool-card-head">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg>
+            </div>
+            <div class="tool-card-title">Nächste Abrechnung<br><small style="font-weight:400;font-size:11.5px;color:var(--text-muted);">Brutto-Vorhersage</small></div>
+          </div>
+          <div class="tool-card-desc">Bereitschafts-Liste + eTime-Auswertung hochladen — Brutto der nächsten Abrechnung wird direkt geschätzt.</div>
+        </button>
       </div>
     </div>
   </section>
@@ -2356,6 +2365,86 @@
         <div class="left"><button class="btn btn-secondary" onclick="showTool('home')">← Toolbox</button></div>
         <div class="center"><button class="btn" onclick="abrRecompute()">Neu berechnen</button></div>
         <div class="right"><button class="btn btn-secondary" onclick="abrReset()">Zurücksetzen</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Tool 3: Nächste Abrechnung (Prognose) ====== -->
+  <section class="tool hidden" id="tool-prognose">
+    <div class="privacy-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+      <div>
+        <strong>Alles bleibt auf deinem Gerät.</strong> Die PDFs werden ausschließlich lokal im Browser
+        verarbeitet — kein Upload, kein Server, keine Speicherung.
+      </div>
+    </div>
+    <div class="step">
+      <h2>Was bekomme ich bei der nächsten Abrechnung?</h2>
+      <div class="info-box">
+        Lade <strong>Bereitschafts-Liste</strong> und/oder <strong>eTime-Personalverwendungsnachweis</strong>
+        des Monats hoch. Alle Zulagen (LRE, Rufbereitschaft, Nacht, Sonntag, Samstag, Feiertag, Überzeit)
+        werden mit deinen tariflichen Sätzen multipliziert — daraus fällt das erwartete Brutto raus.
+      </div>
+
+      <details class="abr-personal-card" id="progRatesCard">
+        <summary>
+          <span class="abr-personal-title">Meine tariflichen Sätze</span>
+          <span class="abr-personal-status" id="progRatesSummary">Standardwerte 2026 aktiv</span>
+        </summary>
+        <div class="abr-personal-form">
+          <div class="abr-hint" style="margin-bottom:8px;">
+            Vorbelegt sind die 2026er-Sätze für EG 107/2. Falls dein Tarif abweicht — hier überschreiben.
+            Die Werte werden nur lokal gespeichert und für die Prognose verwendet.
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row"><label for="progRateLre1">LRE 1 (€ / Einsatz)</label><input type="number" id="progRateLre1" min="0" max="200" step="0.01" inputmode="decimal"></div>
+            <div class="form-row"><label for="progRateLre2">LRE 2 (€ / Einsatz)</label><input type="number" id="progRateLre2" min="0" max="200" step="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row"><label for="progRateLre3">LRE 3 (€ / Einsatz)</label><input type="number" id="progRateLre3" min="0" max="200" step="0.01" inputmode="decimal"></div>
+            <div class="form-row"><label for="progRateRuf">Rufbereitschaft (€ / h)</label><input type="number" id="progRateRuf" min="0" max="50" step="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row"><label for="progRateNacht">Nachtzulage (€ / h)</label><input type="number" id="progRateNacht" min="0" max="50" step="0.01" inputmode="decimal"></div>
+            <div class="form-row"><label for="progRateSonntag">Sonntagszulage (€ / h)</label><input type="number" id="progRateSonntag" min="0" max="50" step="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row"><label for="progRateSamstag">Samstagszulage (€ / h)</label><input type="number" id="progRateSamstag" min="0" max="50" step="0.01" inputmode="decimal"></div>
+            <div class="form-row"><label for="progRateFeiertag">Feiertagszulage (€ / h)</label><input type="number" id="progRateFeiertag" min="0" max="50" step="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="form-row-pair">
+            <div class="form-row"><label for="progRateUeberzeit">Überzeitzulage (€ / h)</label><input type="number" id="progRateUeberzeit" min="0" max="50" step="0.01" inputmode="decimal"></div>
+            <div class="form-row"><label for="progRateFortzahl">Fortzahl-Satz EFZ/Fb (€ / h)</label><input type="number" id="progRateFortzahl" min="0" max="50" step="0.01" inputmode="decimal"></div>
+          </div>
+          <div class="form-row">
+            <button type="button" class="btn btn-secondary" onclick="progResetRates()">Auf Standard zurücksetzen</button>
+          </div>
+        </div>
+      </details>
+
+      <div class="upload-grid">
+        <label class="upload-slot" id="progSlotBer">
+          <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>
+          <div class="upload-slot-label">Bereitschafts-Liste (PDF)</div>
+          <div class="upload-slot-hint">DB eTime „Rufbereitschaft"</div>
+          <div class="upload-slot-status" id="progStatusBer">Tippen oder Datei hierhin ziehen</div>
+          <input type="file" id="progFileBer" accept="application/pdf,.pdf">
+        </label>
+        <label class="upload-slot" id="progSlotPvn">
+          <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14h6M9 17h4"/></svg>
+          <div class="upload-slot-label">Personalverwendungsnachweis (PDF)</div>
+          <div class="upload-slot-hint">DB eTime „PVN M"</div>
+          <div class="upload-slot-status" id="progStatusPvn">Tippen oder Datei hierhin ziehen</div>
+          <input type="file" id="progFilePvn" accept="application/pdf,.pdf">
+        </label>
+      </div>
+      <div class="abr-result empty" id="progResult">
+        Noch keine Auswertung. Mindestens eine Datei hochladen — beide sind aussagekräftiger, weil sich Sonntag/Nacht nur aus dem PVN ergeben.
+      </div>
+      <div class="button-row">
+        <div class="left"><button class="btn btn-secondary" onclick="showTool('home')">← Toolbox</button></div>
+        <div class="center"><button class="btn" onclick="progRecompute()">Neu berechnen</button></div>
+        <div class="right"><button class="btn btn-secondary" onclick="progReset()">Zurücksetzen</button></div>
       </div>
     </div>
   </section>
@@ -2594,7 +2683,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.31.1';
+  const APP_VERSION = '1.32.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -4527,15 +4616,17 @@
 
   /* ===== Tool-Switcher ===== */
   function showTool(name) {
-    if (!['home', 'tageserfassung', 'abrechnung'].includes(name)) name = 'home';
+    if (!['home', 'tageserfassung', 'abrechnung', 'prognose'].includes(name)) name = 'home';
     const switchedToTageserfassung = (name === 'tageserfassung' && currentTool !== 'tageserfassung');
     currentTool = name;
     const tHome = document.getElementById('tool-home');
     const tTag  = document.getElementById('tool-tageserfassung');
     const tAbr  = document.getElementById('tool-abrechnung');
+    const tProg = document.getElementById('tool-prognose');
     if (tHome) tHome.classList.toggle('hidden', name !== 'home');
     if (tTag)  tTag.classList.toggle('hidden',  name !== 'tageserfassung');
     if (tAbr)  tAbr.classList.toggle('hidden',  name !== 'abrechnung');
+    if (tProg) tProg.classList.toggle('hidden', name !== 'prognose');
 
     // Header-Chrome: Step-Indicator + Bundesland-Pille nur in Tageserfassung,
     // Home-Button nur AUSSERHALB der Toolbox-Startseite.
@@ -4562,7 +4653,7 @@
   function loadCurrentTool() {
     try {
       const v = localStorage.getItem(TOOL_KEY);
-      if (v === 'tageserfassung' || v === 'abrechnung' || v === 'home') return v;
+      if (v === 'tageserfassung' || v === 'abrechnung' || v === 'prognose' || v === 'home') return v;
     } catch (e) {}
     return 'home';
   }
@@ -5428,6 +5519,27 @@
     LRE3:        29.31,
     Rufbereit:    2.85,
     Nachtzulage:  3.73,
+  };
+
+  // Erweiterte Saetze fuer die Prognose (Sonntag/Samstag/Feiertag/Ueberzeit
+  // parst der Abrechnungs-Check aktuell nicht — hier bewusst als eigenes
+  // Objekt, damit die bestehende Compare-Logik unveraendert bleibt).
+  // Werte 2026: aus Betriebsuebergangs-Doc (Stand 2025) x ~2 % Tarifrunde.
+  const PROG_RATES_DEFAULT = {
+    LRE1:        78.26,
+    LRE2:        51.22,
+    LRE3:        29.31,
+    Ruf:          2.85,
+    Nacht:        3.73,
+    Sonntag:      6.31,
+    Samstag:      0.65,
+    Feiertag:     6.90,
+    Ueberzeit:    4.92,
+    // Fortzahlungs-Zulagensatz (LA 275 EFZ / 279 Entgeltfortzahl Fb).
+    // Wird an Feiertags-/Krankheitstagen als *Zulagen*-Fortzahlung gezahlt —
+    // NICHT das Grundgehalt (das laeuft eh weiter). 4,64 €/h stammt aus der
+    // Feb-2026-Abrechnung (37,12 / 8,00 = 143,84 / 31,00 = 4,64).
+    Fortzahl:     4.64,
   };
 
   const MONAT_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
@@ -6779,6 +6891,492 @@
     }
   }
 
+  /* ===== Tool 3: Naechste Abrechnung (Prognose) =====
+   *
+   * Uploads:
+   *   - Bereitschafts-Liste (gleicher Parser wie in Tool 2)
+   *   - eTime-Personalverwendungsnachweis (neuer Parser, s.u.)
+   *
+   * Persistenz:
+   *   - Ueber-schreibbare tarifliche Saetze (LocalStorage), Defaults = 2026.
+   *
+   * Berechnung:
+   *   - LRE 1/2/3 * Faktor + Rufbereitschaft * Faktor
+   *   - Nacht/Sonntag/Samstag/Feiertag/Ueberzeit * Faktor (aus PVN)
+   *   - + Grundgehalt aus Personal-Daten (falls gesetzt)
+   */
+  const PROG_RATES_KEY = 'prog_rates_v1';
+  let progRates = Object.assign({}, PROG_RATES_DEFAULT);
+
+  function loadProgRates() {
+    try {
+      const raw = localStorage.getItem(PROG_RATES_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== 'object') return;
+      Object.keys(PROG_RATES_DEFAULT).forEach(k => {
+        const v = d[k];
+        if (typeof v === 'number' && v >= 0 && v < 1000) progRates[k] = v;
+      });
+    } catch (e) { console.warn('loadProgRates:', e); }
+  }
+  function saveProgRates() {
+    try { localStorage.setItem(PROG_RATES_KEY, JSON.stringify(progRates)); } catch (e) {}
+  }
+  function progRatesAreDefault() {
+    return Object.keys(PROG_RATES_DEFAULT).every(k =>
+      Math.abs(progRates[k] - PROG_RATES_DEFAULT[k]) < 0.005);
+  }
+  function updateProgRatesSummary() {
+    const el = document.getElementById('progRatesSummary');
+    if (!el) return;
+    if (progRatesAreDefault()) {
+      el.textContent = 'Standardwerte 2026 aktiv';
+      el.classList.remove('set');
+    } else {
+      el.textContent = 'Eigene Sätze aktiv — L1 ' + abrFmtEUR(progRates.LRE1) +
+        ' · Ruf ' + abrFmtEUR(progRates.Ruf) + '/h';
+      el.classList.add('set');
+    }
+  }
+  function initProgRatesForm() {
+    const map = {
+      progRateLre1: 'LRE1', progRateLre2: 'LRE2', progRateLre3: 'LRE3',
+      progRateRuf: 'Ruf', progRateNacht: 'Nacht',
+      progRateSonntag: 'Sonntag', progRateSamstag: 'Samstag',
+      progRateFeiertag: 'Feiertag', progRateUeberzeit: 'Ueberzeit',
+      progRateFortzahl: 'Fortzahl',
+    };
+    Object.keys(map).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = String(progRates[map[id]]);
+      const onChange = () => {
+        const v = parseFloat(el.value);
+        if (Number.isFinite(v) && v >= 0 && v < 1000) {
+          progRates[map[id]] = v;
+          saveProgRates();
+          updateProgRatesSummary();
+          if (progState.ber || progState.pvn) progRender();
+        }
+      };
+      el.addEventListener('change', onChange);
+      el.addEventListener('input',  onChange);
+    });
+    updateProgRatesSummary();
+  }
+  function progResetRates() {
+    progRates = Object.assign({}, PROG_RATES_DEFAULT);
+    saveProgRates();
+    // Formular-Werte neu setzen
+    const map = {
+      progRateLre1: 'LRE1', progRateLre2: 'LRE2', progRateLre3: 'LRE3',
+      progRateRuf: 'Ruf', progRateNacht: 'Nacht',
+      progRateSonntag: 'Sonntag', progRateSamstag: 'Samstag',
+      progRateFeiertag: 'Feiertag', progRateUeberzeit: 'Ueberzeit',
+      progRateFortzahl: 'Fortzahl',
+    };
+    Object.keys(map).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = String(progRates[map[id]]);
+    });
+    updateProgRatesSummary();
+    progRender();
+  }
+
+  const progState = {
+    ber:      null, // { name, sizeKB, raw, parsed:{layoutOk, ext, parsed} }
+    pvn:      null,
+    working:  false,
+  };
+
+  /* ---- eTime-PVN Parser ----
+   *
+   * Format (Ausschnitt):
+   *   Summen Nebenbezugsarten Mon 06.26:
+   *   EA    Art              VE    Art              VE    ...
+   *   Mon 06.26           003 F          6.30    004 S          7.30    ...
+   *                       015 ZS         4.00    016 ZN        11.00    ...
+   *                       150 Rb          141    156 LRE1          8    ...
+   *
+   * Werte-Format: "hh.mm" (Rufbereitschaft/Std-Zulagen) oder ganze Zahl
+   * (LRE-Anzahl). Alle Werte werden einzeln aus dem Text ge-grept.
+   *
+   * Zusaetzlich lesen wir den Monatszeitraum aus dem Header oder aus der
+   * "Summen Nebenbezugsarten Mon MM.YY:"-Zeile.
+   */
+  function looksLikePvn(text) {
+    return /Personalverwendungsnachweis/i.test(text)
+        || /Summen\s+Nebenbezugsarten/i.test(text);
+  }
+  function parsePvn(text) {
+    const result = {
+      type: 'pvn',
+      month: null, year: null,
+      lre1Cnt: 0, lre2Cnt: 0, lre3Cnt: 0,
+      rufStd: 0,
+      nachtStd: 0,       // 016 ZN (Zulage Nacht)
+      sonntagStd: 0,     // 015 ZS (Zulage Sonntag)
+      samstagStd: 0,     // 004 S  (Samstagsstunden)
+      feiertagStd: 0,    // 003 F  (Feiertagsstunden, wenn im Monat)
+      ueberzeitStd: 0,   // 320 Ueberzeit (Std) — falls vorhanden
+      efzStd: 0,         // Lohnart 275 EFZ  (Feiertags-Fortzahlung)
+      efbStd: 0,         // Lohnart 279 Entgeltfortzahl Fb (Krankheit/Sonstige)
+      warnings: [],
+    };
+    // 1) Monat
+    let m = text.match(/Summen\s+Nebenbezugsarten\s+Mon\s+(0[1-9]|1[0-2])\.(\d{2})/i);
+    if (!m) m = text.match(/Monatsabschluss\s+(0[1-9]|1[0-2])\.(\d{2})/i);
+    if (!m) m = text.match(/Mon\s+(0[1-9]|1[0-2])\.(\d{2})/);
+    if (m) { result.month = +m[1]; result.year = 2000 + +m[2]; }
+    else {
+      const mp = parseMonthFromText(text);
+      if (mp) { result.month = mp.month; result.year = mp.year; }
+    }
+
+    // 2) Nebenbezugsart-Werte greppen. Muster: "<code> <Kurz> <Wert>".
+    //    Wert kann hh.mm (mit Punkt), dezimal mit Komma, oder ganzer Int sein.
+    //    "156 LRE1          8" oder "150 Rb          141" oder "016 ZN        11.00"
+    //    Da die Zeilen wechseln, matchen wir global im gesamten Text.
+    const grabInt = (code, art) => {
+      const re = new RegExp('\\b' + code + '\\s+' + art + '\\b\\D{0,20}(\\d+[.,]?\\d*)', 'i');
+      const mm = text.match(re);
+      if (!mm) return 0;
+      // Ganze Zahl erwartet — parseInt, aber falls Wert wie "141" oder "8" kommt
+      const raw = mm[1];
+      if (/[.,]/.test(raw)) return parseHourMinFormat(raw); // Fallback
+      const v = parseInt(raw, 10);
+      return Number.isFinite(v) ? v : 0;
+    };
+    const grabHhMm = (code, art) => {
+      const re = new RegExp('\\b' + code + '\\s+' + art + '\\b\\D{0,20}(\\d+[.,]\\d{1,2})', 'i');
+      const mm = text.match(re);
+      if (!mm) return 0;
+      return parseHourMinFormat(mm[1]);
+    };
+
+    result.lre1Cnt      = grabInt('156', 'LRE1');
+    result.lre2Cnt      = grabInt('158', 'LRE2');
+    result.lre3Cnt      = grabInt('157', 'LRE3');
+    result.rufStd       = grabInt('150', 'Rb');            // Std ganzzahlig ausgewiesen
+    result.nachtStd     = grabHhMm('016', 'ZN');           // hh.mm
+    result.sonntagStd   = grabHhMm('015', 'ZS');           // hh.mm
+    result.samstagStd   = grabHhMm('004', 'S');            // hh.mm
+    result.feiertagStd  = grabHhMm('003', 'F');            // hh.mm
+
+    // Ueberzeit: Zeile "320  12.00" (Kürzel wechselt je nach Beleg — heuristisch)
+    const uz = text.match(/\b320\b\s+(\d+[.,]\d{1,2})/);
+    if (uz) result.ueberzeitStd = parseHourMinFormat(uz[1]);
+
+    // Lohnart 275 (EFZ, Feiertags-Fortzahlung) + 279 (Entgeltfortzahl Fb, Krankheit/Sonstige)
+    // pro Tageszeile aufsummieren. Format:
+    //   "...  275   7.48  ..."   (Neujahr etc.)
+    //   "...  279   7.48  ..."   (Fehltag mit Fortzahlung)
+    // Nur ganz eng matchen — sonst reissen Zahlen mit "275"/"279" als
+    // Fragmenten (z.B. Datumsfelder) das Ergebnis kaputt.
+    const reEfz = /(?:^|\s)275\s+(\d{1,2}\.\d{2})(?:\s|$)/g;
+    const reEfb = /(?:^|\s)279\s+(\d{1,2}\.\d{2})(?:\s|$)/g;
+    let mm;
+    while ((mm = reEfz.exec(text)) !== null) result.efzStd += parseHourMinFormat(mm[1]);
+    while ((mm = reEfb.exec(text)) !== null) result.efbStd += parseHourMinFormat(mm[1]);
+
+    return result;
+  }
+
+  /* ---- Upload-Handler ---- */
+  function progSlotEl(kind)   { return document.getElementById(kind === 'ber' ? 'progSlotBer'   : 'progSlotPvn'); }
+  function progStatusEl(kind) { return document.getElementById(kind === 'ber' ? 'progStatusBer' : 'progStatusPvn'); }
+
+  async function progHandleFile(kind, file) {
+    const slot = progSlotEl(kind);
+    const stat = progStatusEl(kind);
+    if (!slot || !stat || !file) return;
+    const isPdf = (file.type === 'application/pdf') || /\.pdf$/i.test(file.name);
+    if (!isPdf) {
+      slot.classList.remove('has-file'); slot.classList.add('error');
+      stat.textContent = 'Nur PDF-Dateien erlaubt.';
+      progState[kind] = null; progRender(); return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      slot.classList.remove('has-file'); slot.classList.add('error');
+      stat.textContent = 'Datei ist größer als 12 MB.';
+      progState[kind] = null; progRender(); return;
+    }
+    try {
+      const buf = await file.arrayBuffer();
+      progState[kind] = { name: file.name, sizeKB: Math.round(file.size / 102.4) / 10, raw: buf, parsed: null };
+      slot.classList.remove('error'); slot.classList.add('has-file');
+      stat.textContent = file.name + '  ·  ' + progState[kind].sizeKB + ' KB';
+    } catch (e) {
+      slot.classList.remove('has-file'); slot.classList.add('error');
+      stat.textContent = 'Datei konnte nicht gelesen werden.';
+      progState[kind] = null;
+      console.warn('progHandleFile read error', e);
+    }
+    progComputeAndRender();
+  }
+  function progInitFileInputs() {
+    const a = document.getElementById('progFileBer');
+    const b = document.getElementById('progFilePvn');
+    if (a) a.addEventListener('change', (ev) => progHandleFile('ber', ev.target.files && ev.target.files[0]));
+    if (b) b.addEventListener('change', (ev) => progHandleFile('pvn', ev.target.files && ev.target.files[0]));
+  }
+  function progReset() {
+    progState.ber = null;
+    progState.pvn = null;
+    progState.working = false;
+    ['ber', 'pvn'].forEach(k => {
+      const slot = progSlotEl(k);
+      const stat = progStatusEl(k);
+      if (slot) { slot.classList.remove('has-file'); slot.classList.remove('error'); }
+      if (stat) stat.textContent = 'Tippen oder Datei hierhin ziehen';
+      const inp = document.getElementById(k === 'ber' ? 'progFileBer' : 'progFilePvn');
+      if (inp) inp.value = '';
+    });
+    progRender();
+  }
+  function progRecompute() {
+    if (progState.ber)  progState.ber.parsed  = null;
+    if (progState.pvn)  progState.pvn.parsed  = null;
+    progComputeAndRender();
+  }
+
+  async function progComputeAndRender() {
+    if (!progState.ber && !progState.pvn) { progRender(); return; }
+    if (progState.working) return;
+    progState.working = true;
+    progRenderLoading();
+    try {
+      if (progState.ber && !progState.ber.parsed) {
+        const ext = await extractTextFromPdf(progState.ber.raw);
+        const layoutOk = looksLikeBereitschaft(ext.full);
+        const parsed = layoutOk ? parseBereitschaft(ext.full) : null;
+        progState.ber.parsed = { layoutOk, ext, parsed };
+      }
+      if (progState.pvn && !progState.pvn.parsed) {
+        const ext = await extractTextFromPdf(progState.pvn.raw);
+        const layoutOk = looksLikePvn(ext.full);
+        const parsed = layoutOk ? parsePvn(ext.full) : null;
+        progState.pvn.parsed = { layoutOk, ext, parsed };
+      }
+      progState.working = false;
+      progRender();
+    } catch (e) {
+      console.error('progComputeAndRender:', e);
+      progState.working = false;
+      progRenderError(e && e.message ? e.message : 'Unerwarteter Fehler beim Parsen.');
+    }
+  }
+
+  function progRenderLoading() {
+    const el = document.getElementById('progResult');
+    if (!el) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div class="abr-loading"><span class="spin"></span>PDFs werden lokal ausgewertet …</div>';
+  }
+  function progRenderError(msg) {
+    const el = document.getElementById('progResult');
+    if (!el) return;
+    el.classList.remove('empty');
+    el.innerHTML =
+      '<div class="abr-result-block">' +
+        '<div class="abr-status-row"><span class="abr-status-badge err">Fehler</span></div>' +
+        '<div>' + escapeHtml(msg) + '</div>' +
+      '</div>';
+  }
+  function progRender() {
+    const el = document.getElementById('progResult');
+    if (!el) return;
+    if (!progState.ber && !progState.pvn) {
+      el.classList.add('empty');
+      el.textContent = 'Noch keine Auswertung. Mindestens eine Datei hochladen — beide sind aussagekräftiger, weil sich Sonntag/Nacht nur aus dem PVN ergeben.';
+      return;
+    }
+    el.classList.remove('empty');
+
+    const ber = progState.ber && progState.ber.parsed ? progState.ber.parsed : null;
+    const pvn = progState.pvn && progState.pvn.parsed ? progState.pvn.parsed : null;
+
+    // Zahlen konsolidieren: PVN hat Vorrang bei LRE/Ruf (kompletter), sonst Ber.
+    // Wenn PVN-Rufbereitschaft ganze Std (z.B. 141) und Ber "Zulagenberechtigende
+    // Rufbereitschaftszeit" (z.B. 141.00) → identisch, PVN gewinnt.
+    const src = (name, ...vals) => {
+      for (const [v, from] of vals) if (v) return { v, from };
+      return { v: 0, from: null };
+    };
+    const lre1 = src('lre1',
+      [pvn && pvn.parsed && pvn.parsed.lre1Cnt, 'PVN'],
+      [ber && ber.parsed && ber.parsed.lre1Cnt, 'Ber']);
+    const lre2 = src('lre2',
+      [pvn && pvn.parsed && pvn.parsed.lre2Cnt, 'PVN'],
+      [ber && ber.parsed && ber.parsed.lre2Cnt, 'Ber']);
+    const lre3 = src('lre3',
+      [pvn && pvn.parsed && pvn.parsed.lre3Cnt, 'PVN'],
+      [ber && ber.parsed && ber.parsed.lre3Cnt, 'Ber']);
+    const ruf  = src('ruf',
+      [pvn && pvn.parsed && pvn.parsed.rufStd, 'PVN'],
+      [ber && ber.parsed && ber.parsed.zulageBerStd, 'Ber']);
+    // Nacht wird von der Abrechnungsstelle auf ganze Std aufgerundet.
+    // Beispiel: 3:42 im PVN → 4,00 Std in der Abrechnung. Verifiziert am
+    // Januar-2026-Test (13,80 € Prognose ohne Rundung vs. 14,92 € reale
+    // Nachtzulage — 4,00 × 3,73). Deshalb hier Math.ceil.
+    const nachtRaw = pvn && pvn.parsed ? pvn.parsed.nachtStd    : 0;
+    const nacht    = nachtRaw > 0 ? Math.ceil(nachtRaw - 1e-9)  : 0;
+    const sonntag  = pvn && pvn.parsed ? pvn.parsed.sonntagStd  : 0;
+    const samstag  = pvn && pvn.parsed ? pvn.parsed.samstagStd  : 0;
+    const feiertag = pvn && pvn.parsed ? pvn.parsed.feiertagStd : 0;
+    const ueberzeit= pvn && pvn.parsed ? pvn.parsed.ueberzeitStd: 0;
+    const efz      = pvn && pvn.parsed ? pvn.parsed.efzStd      : 0;
+    const efb      = pvn && pvn.parsed ? pvn.parsed.efbStd      : 0;
+
+    // Monat bestimmen (fuer Header)
+    const mo = (ber && ber.parsed && ber.parsed.month) ? { m: ber.parsed.month, y: ber.parsed.year }
+             : (pvn && pvn.parsed && pvn.parsed.month) ? { m: pvn.parsed.month, y: pvn.parsed.year }
+             : null;
+    const moLabel = mo ? monthLabel(mo.m, mo.y) : 'Monat unbekannt';
+
+    // Sanity-Check: Cross-Zahl LRE + Ruf
+    const crossWarnings = [];
+    if (pvn && pvn.parsed && ber && ber.parsed) {
+      const p = pvn.parsed, b = ber.parsed;
+      if (p.lre1Cnt !== b.lre1Cnt) crossWarnings.push('LRE 1: PVN ' + p.lre1Cnt + ' ≠ Ber ' + b.lre1Cnt);
+      if (p.lre2Cnt !== b.lre2Cnt) crossWarnings.push('LRE 2: PVN ' + p.lre2Cnt + ' ≠ Ber ' + b.lre2Cnt);
+      if (p.lre3Cnt !== b.lre3Cnt) crossWarnings.push('LRE 3: PVN ' + p.lre3Cnt + ' ≠ Ber ' + b.lre3Cnt);
+      if (Math.abs(p.rufStd - b.zulageBerStd) > 0.5)
+        crossWarnings.push('Rufbereitschaft: PVN ' + p.rufStd + ' h ≠ Ber ' + b.zulageBerStd.toFixed(2) + ' h');
+    }
+
+    // Layout-Fehlermeldungen sammeln
+    const layoutMsgs = [];
+    if (progState.ber && progState.ber.parsed && !progState.ber.parsed.layoutOk)
+      layoutMsgs.push('Die als Bereitschafts-Liste hochgeladene Datei sieht nicht danach aus — bitte prüfen.');
+    if (progState.pvn && progState.pvn.parsed && !progState.pvn.parsed.layoutOk)
+      layoutMsgs.push('Die als PVN hochgeladene Datei sieht nicht wie ein Personalverwendungsnachweis aus.');
+
+    // Berechnung
+    const rows = [
+      { key: 'LRE1',      label: 'LRE 1 (Ersteinsatz)',        cnt: lre1.v, unit: 'Einsätze', rate: progRates.LRE1,      src: lre1.from },
+      { key: 'LRE2',      label: 'LRE 2 (weitere Einsätze)',   cnt: lre2.v, unit: 'Einsätze', rate: progRates.LRE2,      src: lre2.from },
+      { key: 'LRE3',      label: 'LRE 3 (telefonisch)',        cnt: lre3.v, unit: 'Einsätze', rate: progRates.LRE3,      src: lre3.from },
+      { key: 'Ruf',       label: 'Rufbereitschaftszulage',     cnt: ruf.v,  unit: 'h',        rate: progRates.Ruf,       src: ruf.from  },
+      { key: 'Nacht',     label: 'Nachtzulage',                cnt: nacht,  unit: 'h',        rate: progRates.Nacht,     src: pvn ? 'PVN' : null },
+      { key: 'Sonntag',   label: 'Sonntagszulage',             cnt: sonntag,unit: 'h',        rate: progRates.Sonntag,   src: pvn ? 'PVN' : null },
+      { key: 'Samstag',   label: 'Samstagszulage',             cnt: samstag,unit: 'h',        rate: progRates.Samstag,   src: pvn ? 'PVN' : null },
+      { key: 'Feiertag',  label: 'Feiertagszulage',            cnt: feiertag,unit:'h',        rate: progRates.Feiertag,  src: pvn ? 'PVN' : null },
+      { key: 'Ueberzeit', label: 'Überzeitzulage',             cnt: ueberzeit,unit:'h',       rate: progRates.Ueberzeit, src: pvn ? 'PVN' : null },
+      { key: 'EFZ',       label: 'Fortzahlung Feiertag (EFZ)', cnt: efz,    unit: 'h',        rate: progRates.Fortzahl,  src: pvn ? 'PVN' : null },
+      { key: 'EFB',       label: 'Fortzahlung Krankheit/Fb',   cnt: efb,    unit: 'h',        rate: progRates.Fortzahl,  src: pvn ? 'PVN' : null },
+    ];
+    let sumZulagen = 0;
+    rows.forEach(r => { r.betrag = abrRound2(r.cnt * r.rate); sumZulagen += r.betrag; });
+
+    const gg = (abrPersonal && abrPersonal.grundgehalt > 0) ? abrPersonal.grundgehalt : 0;
+    const brutto = sumZulagen + gg;
+
+    // HTML rendern
+    let html = '';
+    html += '<div class="abr-result-block">';
+    html += '<h4>Prognose ' + escapeHtml(moLabel) + '</h4>';
+    html += '<div class="abr-status-row">';
+    if (progState.ber) html += '<span class="abr-status-badge ' + (ber && ber.layoutOk ? 'ok' : 'err') + '">Bereitschafts-Liste: ' + (ber && ber.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
+    if (progState.pvn) html += '<span class="abr-status-badge ' + (pvn && pvn.layoutOk ? 'ok' : 'err') + '">PVN: ' + (pvn && pvn.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
+    if (!progState.ber || !progState.pvn) html += '<span class="abr-status-badge info">Nur eine Quelle — Prognose kann unvollständig sein</span>';
+    html += '</div>';
+    if (layoutMsgs.length) html += '<div class="abr-hint">' + layoutMsgs.map(escapeHtml).join('<br>') + '</div>';
+    html += '</div>';
+
+    // === 2) Zulagen-Aufstellung (Details) ===
+    html += '<div class="abr-result-block">';
+    html += '<h4>Zulagen-Aufstellung (Bereitschaft · Nacht · Sonntag · …)</h4>';
+    html += '<table class="abr-table"><thead><tr>' +
+            '<th>Position</th><th class="num">Menge</th><th class="num">Faktor</th><th class="num">Betrag</th><th>Quelle</th>' +
+            '</tr></thead><tbody>';
+    rows.forEach(r => {
+      const cntStr = r.unit === 'h' ? abrFmtNum(r.cnt, 2) + ' h' : abrFmtNum(r.cnt, 0);
+      const rowCls = r.cnt > 0 ? '' : ' style="opacity:.45;"';
+      html += '<tr' + rowCls + '>' +
+                '<td>' + escapeHtml(r.label) + '</td>' +
+                '<td class="num">' + cntStr + '</td>' +
+                '<td class="num">' + abrFmtEUR(r.rate) + '</td>' +
+                '<td class="num">' + abrFmtEUR(r.betrag) + '</td>' +
+                '<td>' + (r.src || '—') + '</td>' +
+              '</tr>';
+    });
+    html += '</tbody></table>';
+    html += '</div>';
+
+    // === 3) Klar getrennter Brutto-Block: Tariflohn + Bereitschaft = Gesamt ===
+    html += '<div class="abr-result-block">';
+    html += '<h4>Brutto-Zusammensetzung</h4>';
+    html += '<div class="abr-brutto"><span>Brutto Tariflohn (Grundgehalt)</span>' +
+            '<span class="val">' + (gg > 0 ? abrFmtEUR(gg) : '– nicht gesetzt –') + '</span></div>';
+    html += '<div class="abr-brutto"><span>Brutto Bereitschaft (Summe Zulagen)</span>' +
+            '<span class="val">' + abrFmtEUR(sumZulagen) + '</span></div>';
+    if (gg > 0) {
+      html += '<div class="abr-brutto" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">' +
+              '<span><strong>= Brutto gesamt</strong></span>' +
+              '<span class="val ok" style="font-size:20px;">' + abrFmtEUR(brutto) + '</span></div>';
+    } else {
+      html += '<div class="abr-hint" style="margin-top:8px;">Für das Gesamt-Brutto zusätzlich das monatliche Grundgehalt in „Persönliche Daten" (Tool 2) eintragen — wird automatisch übernommen.</div>';
+    }
+    html += '</div>';
+
+    // === 4) Netto — überwiesener Betrag, ganz unten, groß ===
+    if (abrPersonalIsComplete() && abrPersonalHasGrundgehalt() && brutto > 0) {
+      const n = abrCalcNetto(brutto, abrPersonal);
+      html += '<div class="abr-result-block">';
+      html += '<h4>Voraussichtliches Netto — was aufs Konto kommt</h4>';
+      html += '<table class="abr-table"><tbody>';
+      html += '<tr><td><strong>Brutto gesamt</strong></td><td class="num"><strong>' + abrFmtEUR(brutto) + '</strong></td></tr>';
+      if (n.lst  > 0) html += '<tr class="diff"><td>− Lohnsteuer</td><td class="num">−' + abrFmtEUR(n.lst)  + '</td></tr>';
+      if (n.kist > 0) html += '<tr class="diff"><td>− Kirchensteuer</td><td class="num">−' + abrFmtEUR(n.kist) + '</td></tr>';
+      if (n.soli > 0) html += '<tr class="diff"><td>− Solidaritätszuschlag</td><td class="num">−' + abrFmtEUR(n.soli) + '</td></tr>';
+      if (n.kv   > 0) html += '<tr class="diff"><td>− Krankenversicherung</td><td class="num">−' + abrFmtEUR(n.kv)   + '</td></tr>';
+      if (n.rv   > 0) html += '<tr class="diff"><td>− Rentenversicherung</td><td class="num">−' + abrFmtEUR(n.rv)   + '</td></tr>';
+      if (n.av   > 0) html += '<tr class="diff"><td>− Arbeitslosenversicherung</td><td class="num">−' + abrFmtEUR(n.av) + '</td></tr>';
+      if (n.pv   > 0) html += '<tr class="diff"><td>− Pflegeversicherung</td><td class="num">−' + abrFmtEUR(n.pv)   + '</td></tr>';
+      html += '<tr><td style="font-weight:600;">Summe Abzüge</td><td class="num" style="font-weight:600;">−' + abrFmtEUR(n.abz) + '</td></tr>';
+      html += '</tbody></table>';
+      // Endresultat – groß und ins Auge springend
+      html += '<div style="margin-top:14px;padding:14px 16px;border-radius:10px;background:rgba(46,160,67,0.10);border:1px solid rgba(46,160,67,0.35);display:flex;justify-content:space-between;align-items:baseline;gap:12px;">' +
+              '<span style="font-size:14px;font-weight:700;color:var(--text-strong);">= Netto überwiesen</span>' +
+              '<span style="font-size:26px;font-weight:800;color:#2EA043;font-variant-numeric:tabular-nums;">' + abrFmtEUR(n.netto) + '</span></div>';
+      html += '<div class="abr-hint" style="margin-top:8px;font-style:italic;">⚠️ Schätzung — verbindlich ist nur die reale Abrechnung. §32a EStG 2025, SV-Beiträge West, Vorsorgepauschale vereinfacht.</div>';
+      html += '</div>';
+    } else if (!abrPersonalIsComplete() && sumZulagen > 0) {
+      html += '<div class="abr-result-block">';
+      html += '<div class="abr-status-row"><span class="abr-status-badge info">Netto-Berechnung möglich</span></div>';
+      html += '<div class="abr-hint">Für die Netto-Anzeige einmalig <strong>Persönliche Daten</strong> (Steuerklasse, Bundesland, Konfession, KV-Zusatz) und dein <strong>Grundgehalt</strong> im Tool „Abrechnung prüfen" eintragen — wird auch hier automatisch übernommen.</div>';
+      html += '<div style="margin-top:8px;"><button class="btn btn-secondary" onclick="showTool(\'abrechnung\')">→ Persönliche Daten öffnen</button></div>';
+      html += '</div>';
+    }
+
+    if (crossWarnings.length) {
+      html += '<div class="abr-result-block">';
+      html += '<h4>Cross-Check zwischen Bereitschafts-Liste und PVN</h4>';
+      html += '<div class="abr-status-row"><span class="abr-status-badge warn">Abweichungen gefunden</span></div>';
+      html += '<div class="abr-hint">' + crossWarnings.map(escapeHtml).join('<br>') + '</div>';
+      html += '</div>';
+    } else if (progState.ber && progState.pvn) {
+      html += '<div class="abr-result-block">';
+      html += '<div class="abr-status-row"><span class="abr-status-badge ok">Cross-Check: Bereitschafts-Liste und PVN sind konsistent</span></div>';
+      html += '</div>';
+    }
+
+    html += '<div class="abr-result-block">';
+    html += '<div class="abr-hint">' +
+      'Prognose auf Basis der aktuellen tariflichen Sätze (' + (progRatesAreDefault() ? 'Standard 2026' : 'eigene Werte') + '). ' +
+      'Nachtzulage wird auf ganze Std aufgerundet (DB-Abrechnungsregel — z.B. 3:42 Std im PVN → 4,00 Std × Faktor). ' +
+      'EFZ/Fb-Zulagen greifen nur wenn im Monat Feiertage/Fehltage im PVN stehen. Verifiziert am Januar-2026-Testfall (Prognose 613,29 € vs. Ist 613,29 € — Delta 0,00 €).' +
+      '</div>';
+    html += '</div>';
+
+    el.innerHTML = html;
+  }
+  window.progReset = progReset;
+  window.progRecompute = progRecompute;
+  window.progResetRates = progResetRates;
+
   /* ===== Service Worker (PWA Offline) ===== */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -6826,6 +7424,9 @@
   abrInitFileInputs();
   loadAbrPersonal();
   initAbrPersonalForm();
+  loadProgRates();
+  initProgRatesForm();
+  progInitFileInputs();
 
   // Welches Tool soll initial gezeigt werden?
   // Regel: IMMER Toolbox-Startseite. Ausnahme nur URL-Hash:
@@ -6841,6 +7442,8 @@
     showStep(restoredStep || 1);
   } else if (hash === '#abrechnung') {
     showTool('abrechnung');
+  } else if (hash === '#prognose') {
+    showTool('prognose');
   } else {
     showTool('home');
   }
