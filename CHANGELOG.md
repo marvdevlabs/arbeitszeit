@@ -7,6 +7,15 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.34.0] — 2026-07-10
+
+### Neu
+- **Netto-Split „Was bringt die Bereitschaft davon netto?"** unter dem Voll-Monatsnetto. Zeigt Netto **ohne** Bereitschaft (nur Grundgehalt) vs. **mit** und daraus das **Netto-Plus aus Bereitschaft** plus **marginale Netto-Quote**. Erklärt endlich verständlich, wie viel Bereitschaft **wirklich** aufs Konto bringt (nicht die ~1.245 € Voll-Abzüge, die verwirren).
+- **Zwei-Zahlläufe-Hinweis** ergänzt: Voll-Netto verteilt sich in der Realität auf **Regel-Abrechnung** (Grundgehalt Ende Vormonat) und **Zulagen-Nachzahlung** (3–4 Wochen später). Damit klar ist, warum die Kontoauszug-Zahl anders aussieht.
+- **Toleranz-Hinweis ±10 %** beim Netto-Plus: DB rechnet Nachzahlungs-Lohnsteuer mit einer glatteren internen Formel als §32a-EStG-Marginal-Delta. Verifiziert am Januar-2026-Testfall (App-Plus 338,20 € vs. real 373,37 €, Abweichung 9,4 %).
+
+---
+
 ## [1.33.0] — 2026-07-10
 
 ### Geändert
