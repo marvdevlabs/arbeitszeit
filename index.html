@@ -325,22 +325,27 @@
   .tool { display: block; }
   .tool.hidden { display: none !important; }
 
-  .tool-home { padding: 22px 20px 18px; }
+  .tool-home { padding: 24px 20px 20px; }
   .tool-home h2 {
-    font-size: 18px; margin-bottom: 6px; color: var(--text-strong);
-    text-align: center;
+    font-size: 20px; margin-bottom: 4px; color: var(--text-strong);
+    text-align: center; letter-spacing: -0.2px;
   }
   .tool-home .home-sub {
-    text-align: center; color: var(--text-secondary);
-    font-size: 13px; margin-bottom: 18px;
+    text-align: center; color: var(--text-muted);
+    font-size: 13px; margin-bottom: 22px;
   }
   .tool-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 12px;
   }
+  /* Ab ~560 px zwei Spalten (Tablet/kleiner Desktop) */
   @media (min-width: 560px) {
-    .tool-grid { grid-template-columns: 1fr 1fr; }
+    .tool-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  }
+  /* Ab ~820 px drei Spalten — alle Karten nebeneinander */
+  @media (min-width: 820px) {
+    .tool-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
   }
   .tool-card {
     background: var(--bg-card);
@@ -355,6 +360,7 @@
     transition: transform 0.15s, box-shadow 0.2s, border-color 0.15s, background 0.2s;
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     width: 100%;
+    min-height: 140px;
   }
   .tool-card:hover {
     border-color: var(--db-red);
@@ -382,6 +388,18 @@
   .tool-card-desc {
     font-size: 12.5px; line-height: 1.55;
     color: var(--text-secondary);
+  }
+  /* Persönliche-Daten-Card auf Home — sichtbar von Tools abgesetzt */
+  .tool-home .abr-personal-card {
+    margin-top: 26px;
+    position: relative;
+  }
+  .tool-home .abr-personal-card::before {
+    content: "";
+    position: absolute;
+    top: -14px; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--border) 25%, var(--border) 75%, transparent 100%);
   }
   .tool-card-tag {
     display: inline-block;
@@ -2698,7 +2716,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.36.0';
+  const APP_VERSION = '1.36.1';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h

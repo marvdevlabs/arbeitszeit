@@ -7,6 +7,16 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.36.1] — 2026-07-10
+
+### Verbessert (Home-Layout)
+- **3-Spalten-Grid ab Desktop** (≥ 820 px): alle drei Tool-Karten stehen jetzt nebeneinander in einer Reihe — kein „einsame Karte in Reihe 2 + Loch" mehr. Auf Tablet (≥ 560 px) weiterhin 2 Spalten, auf Mobile 1 Spalte.
+- **Karten mit einheitlicher Mindesthöhe** — vermeidet unterschiedlich hohe Kacheln bei kurzem/langem Beschreibungstext.
+- **Persönliche-Daten-Card visuell abgesetzt** vom Tool-Grid: 26 px Extra-Abstand + dezente Trennlinie mit weichen Rändern.
+- Home-Überschrift größer, luftiger — mehr Ruhe.
+
+---
+
 ## [1.36.0] — 2026-07-10
 
 ### Neu
