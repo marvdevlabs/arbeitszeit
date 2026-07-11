@@ -7,6 +7,13 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.41.1] — 2026-07-10
+
+### Rückgängig gemacht
+- **Dashboard-Home (v1.42.0)** wieder ausgebaut — Home zeigt wieder die drei Tool-Kacheln und die Frage „Was möchtest du machen?", kein Live-Panel obendrüber. Feedback: „ein wenig komisch". Persönliche Daten und die Prognose-Werte werden weiterhin lokal gespeichert, aber nicht mehr als Dashboard auf Home dargestellt.
+
+---
+
 ## [1.41.0] — 2026-07-10
 
 ### Neu — Setup Automagic (Feature D für v2.0)
