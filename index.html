@@ -2115,6 +2115,9 @@
       <button class="header-bundesland hidden" id="headerBundesland" onclick="showStep(1)" title="Bundesland ändern" aria-label="Bundesland ändern">
         <span id="headerBundeslandLabel">—</span>
       </button>
+      <button class="theme-toggle" id="personalBtn" onclick="openPersonalDataModal()" title="Persönliche Daten" aria-label="Persönliche Daten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
       <button class="theme-toggle" id="historyBtn" onclick="openHistoryModal()" title="Verlauf" aria-label="Verlauf">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
       </button>
@@ -2169,93 +2172,7 @@
           <div class="tool-card-desc">Bereitschafts-Liste + eTime-Auswertung hochladen — Brutto der nächsten Abrechnung wird direkt geschätzt.</div>
         </button>
       </div>
-
-      <!-- ====== Persönliche Daten (Pflicht für Tool 2 & 3) ====== -->
-      <details class="abr-personal-card" id="abrPersonalCard">
-        <summary>
-          <span class="abr-personal-title">Persönliche Daten</span>
-          <span class="abr-personal-status" id="abrPersonalSummary">Noch nicht eingestellt — bitte einmalig ausfüllen</span>
-        </summary>
-        <div class="abr-personal-form">
-          <div class="abr-hint" style="margin-bottom:8px;">
-            Pflicht für <strong>Abrechnung prüfen</strong> und <strong>Nächste Abrechnung</strong>. Wird nur lokal im Browser gespeichert — keine Übertragung, kein Server.
-          </div>
-          <div class="form-row">
-            <label for="abrGrundgehalt">Monatliches Grundgehalt (brutto, in €)</label>
-            <input type="number" id="abrGrundgehalt" min="0" max="20000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="z.B. 3570,49">
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrSteuerklasse">Steuerklasse</label>
-              <select class="form-select" id="abrSteuerklasse">
-                <option value="1">I (ledig)</option>
-                <option value="2">II (alleinerz.)</option>
-                <option value="3">III (verh. Hauptverd.)</option>
-                <option value="4">IV (verh. gleich)</option>
-                <option value="5">V (verh. Nebenverd.)</option>
-                <option value="6">VI (Zweitjob)</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrKinder">Kinderfreibeträge</label>
-              <input type="number" id="abrKinder" min="0" max="8" step="0.5" value="0" inputmode="decimal" lang="de">
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrKonfession">Konfession</label>
-              <select class="form-select" id="abrKonfession">
-                <option value="keine">Keine</option>
-                <option value="ev">Evangelisch</option>
-                <option value="rk">Römisch-katholisch</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrBundesland">Bundesland</label>
-              <select class="form-select" id="abrBundesland"></select>
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrKvZusatz">KV-Zusatzbeitrag (%)</label>
-              <input type="number" id="abrKvZusatz" min="0" max="5" step="0.05" value="1.7" inputmode="decimal" lang="de">
-            </div>
-            <div class="form-row">
-              <label for="abrKinderlos">Kinderlos &gt; 23?</label>
-              <select class="form-select" id="abrKinderlos">
-                <option value="false">Nein</option>
-                <option value="true">Ja (+0,6 % PV)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row-pair">
-            <div class="form-row">
-              <label for="abrFunktionsgruppe">Funktionsgruppe (DB)</label>
-              <select class="form-select" id="abrFunktionsgruppe">
-                <option value="">— optional —</option>
-                <option value="1">FGr 1 (Werker, Servicetec, …)</option>
-                <option value="2">FGr 2</option>
-                <option value="3">FGr 3</option>
-                <option value="4">FGr 4</option>
-                <option value="5">FGr 5</option>
-                <option value="6">FGr 6</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label for="abrEntgeltgruppe">Entgeltgruppe</label>
-              <input type="text" id="abrEntgeltgruppe" maxlength="6" placeholder="z.B. 107">
-            </div>
-          </div>
-          <div class="form-row">
-            <label for="abrStufe">Entgeltstufe</label>
-            <input type="number" id="abrStufe" min="1" max="10" step="1" placeholder="z.B. 2" inputmode="numeric">
-          </div>
-          <div class="form-row">
-            <label for="abrSteuerfrei">Steuerfreie Bezüge pro Monat (bAV / VBL / Rad-Verzicht, in €)</label>
-            <input type="number" id="abrSteuerfrei" min="0" max="1000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="0,00 — optional, macht Netto-Prognose pfennig-genau">
-          </div>
-        </div>
-      </details>
+      <!-- Persönliche Daten wandern ins Zahnrad-Modal (Header oben rechts). -->
     </div>
   </section>
 
@@ -2505,6 +2422,97 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalPersonalData">
+  <div class="modal-card modal-card-wide">
+    <div class="modal-title">Persönliche Daten</div>
+    <div class="modal-body">
+      <div class="abr-hint" style="margin-bottom:14px;">
+        Pflicht für <strong>Abrechnung prüfen</strong> und <strong>Nächste Abrechnung</strong>. Wird nur lokal im Browser gespeichert — keine Übertragung, kein Server.
+      </div>
+      <div class="abr-personal-form" id="abrPersonalCard">
+        <div class="form-row">
+          <label for="abrGrundgehalt">Monatliches Grundgehalt (brutto, in €)</label>
+          <input type="number" id="abrGrundgehalt" min="0" max="20000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="z.B. 3570,49">
+        </div>
+        <div class="form-row-pair">
+          <div class="form-row">
+            <label for="abrSteuerklasse">Steuerklasse</label>
+            <select class="form-select" id="abrSteuerklasse">
+              <option value="1">I (ledig)</option>
+              <option value="2">II (alleinerz.)</option>
+              <option value="3">III (verh. Hauptverd.)</option>
+              <option value="4">IV (verh. gleich)</option>
+              <option value="5">V (verh. Nebenverd.)</option>
+              <option value="6">VI (Zweitjob)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="abrKinder">Kinderfreibeträge</label>
+            <input type="number" id="abrKinder" min="0" max="8" step="0.5" value="0" inputmode="decimal" lang="de">
+          </div>
+        </div>
+        <div class="form-row-pair">
+          <div class="form-row">
+            <label for="abrKonfession">Konfession</label>
+            <select class="form-select" id="abrKonfession">
+              <option value="keine">Keine</option>
+              <option value="ev">Evangelisch</option>
+              <option value="rk">Römisch-katholisch</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="abrBundesland">Bundesland</label>
+            <select class="form-select" id="abrBundesland"></select>
+          </div>
+        </div>
+        <div class="form-row-pair">
+          <div class="form-row">
+            <label for="abrKvZusatz">KV-Zusatzbeitrag (%)</label>
+            <input type="number" id="abrKvZusatz" min="0" max="5" step="0.05" value="1.7" inputmode="decimal" lang="de">
+          </div>
+          <div class="form-row">
+            <label for="abrKinderlos">Kinderlos &gt; 23?</label>
+            <select class="form-select" id="abrKinderlos">
+              <option value="false">Nein</option>
+              <option value="true">Ja (+0,6 % PV)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-pair">
+          <div class="form-row">
+            <label for="abrFunktionsgruppe">Funktionsgruppe (DB)</label>
+            <select class="form-select" id="abrFunktionsgruppe">
+              <option value="">— optional —</option>
+              <option value="1">FGr 1 (Werker, Servicetec, …)</option>
+              <option value="2">FGr 2</option>
+              <option value="3">FGr 3</option>
+              <option value="4">FGr 4</option>
+              <option value="5">FGr 5</option>
+              <option value="6">FGr 6</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="abrEntgeltgruppe">Entgeltgruppe</label>
+            <input type="text" id="abrEntgeltgruppe" maxlength="6" placeholder="z.B. 107">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="abrStufe">Entgeltstufe</label>
+          <input type="number" id="abrStufe" min="1" max="10" step="1" placeholder="z.B. 2" inputmode="numeric">
+        </div>
+        <div class="form-row">
+          <label for="abrSteuerfrei">Steuerfreie Bezüge pro Monat (bAV / VBL / Rad-Verzicht, in €)</label>
+          <input type="number" id="abrSteuerfrei" min="0" max="1000" step="0.01" value="" inputmode="decimal" lang="de" placeholder="0,00 — optional, macht Netto-Prognose pfennig-genau">
+        </div>
+      </div>
+      <div class="abr-personal-status hidden" id="abrPersonalSummary"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closePersonalDataModal()">Fertig</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalPersonalGate">
   <div class="modal-card">
     <div class="modal-title" id="modalPersonalGateTitle">Persönliche Daten fehlen</div>
@@ -2742,7 +2750,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.38.0';
+  const APP_VERSION = '1.39.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6310,19 +6318,29 @@
   }
   function openPersonalDataFromModal() {
     closePersonalGateModal();
-    const card = document.getElementById('abrPersonalCard');
-    if (card) {
-      card.setAttribute('open', '');
-      card.classList.add('gate-pulse');
-      setTimeout(() => card.classList.remove('gate-pulse'), 2200);
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    openPersonalDataModal();
+  }
+  function openPersonalDataModal() {
+    const m = document.getElementById('modalPersonalData');
+    if (m) m.classList.remove('hidden');
     // Ersten Fokus auf Grundgehalt (springt zur wichtigsten Eingabe)
     setTimeout(() => {
       const gg = document.getElementById('abrGrundgehalt');
       if (gg) gg.focus();
-    }, 350);
+    }, 200);
   }
+  function closePersonalDataModal() {
+    const m = document.getElementById('modalPersonalData');
+    if (m) m.classList.add('hidden');
+    // Nach Schließen: Falls Gate gerade wartete und Daten jetzt komplett → weiter
+    if (_pendingToolAfterGate && abrPersonalGateOk()) {
+      const target = _pendingToolAfterGate;
+      _pendingToolAfterGate = null;
+      showTool(target);
+    }
+  }
+  window.openPersonalDataModal = openPersonalDataModal;
+  window.closePersonalDataModal = closePersonalDataModal;
   // Beim Verlassen ohne Ausfüllen NIE ein zweites Welcome-Modal
   // (der Rücksprung bei Tool-2/3-Klick zeigt das Gate-Modal, das ist ok)
   function maybeShowPersonalWelcome() {
@@ -7033,12 +7051,8 @@
   function abrShowMoney() {
     if (!abrPersonalIsComplete() || !abrPersonalHasGrundgehalt()) {
       abrState.pendingMoney = true;
-      // Personal-Daten-Card aufklappen + hinscrollen
-      const card = document.getElementById('abrPersonalCard');
-      if (card) {
-        card.open = true;
-        setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-      }
+      // Personal-Daten-Modal öffnen
+      openPersonalDataModal();
       const missingGG = !abrPersonalHasGrundgehalt();
       const missingBL = !abrPersonalIsComplete();
       const what = (missingGG && missingBL) ? 'dein Bundesland und dein Grundgehalt'

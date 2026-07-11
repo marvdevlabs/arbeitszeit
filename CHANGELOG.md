@@ -7,6 +7,15 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.39.0] — 2026-07-10
+
+### Verändert
+- **Persönliche Daten sind kein Home-Element mehr** — sie wandern in ein **Zahnrad-Icon** oben rechts im Header (neben Verlauf/Backup/Theme). Tap öffnet ein modales Formular. Home zeigt wirklich nur noch die drei Tools und die Frage „Was möchtest du machen?".
+- **Warnungs-Modal „Persönliche Daten fehlen"** öffnet beim „Jetzt ausfüllen"-Klick jetzt direkt das neue Personal-Daten-Modal (statt zur Card zu scrollen und diese pulsen zu lassen — die Card gibt's nicht mehr).
+- **Automatischer Weiter-Sprung** bleibt: wenn du das Modal mit „Fertig" schließt und die Daten inzwischen komplett sind, springt die App direkt in das Tool, das du vorher aufrufen wolltest.
+
+---
+
 ## [1.38.0] — 2026-07-10
 
 ### Neu
