@@ -7,6 +7,24 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.37.0] — 2026-07-10
+
+### Verändert (iOS-Look & -Feel)
+Größerer UI-Refactor Richtung iPhone-Design-Sprache — die App soll sich anfühlen wie eine native Apple-App, nicht mehr wie ein Formular in DB-Rot.
+
+- **Header**: rotes Voll-Panel raus. Jetzt heller Nav-Bar-Look mit Backdrop-Blur (72 % Opazität + 24 px saturate-blur) und dünner Border-Bottom — genau wie iOS `UINavigationBar`. Titel dunkel-grau statt weiß, kleiner und in SF-Pro-Gewicht (600).
+- **DB-Rot als reinen Akzent** (`--tint`) verwendet — nicht mehr als Flächenfarbe. Nur aktive Elemente / Primary-Buttons / Fokus-States sind rot.
+- **Buttons flat statt Gradient**: 12 px Radius, 44 px Mindesthöhe (Touch-Target-Regel), `scale(0.97)` beim Tap. Primary = tint-gefüllt, Secondary = tinted (transparent-tint), Outline = wie zuvor.
+- **Tool-Cards** ohne dicken Border — dafür sanfte Schatten (`0.5px + 3px`-Layer). Icons in Farb-Tint-Kacheln statt Vollrot-Gradient. Hover-State ruhiger.
+- **Persönliche-Daten-Card**: Chevron statt Pfeil-Emoji, weichere Trennung. Passt in iOS-Settings-App-Optik.
+- **Forms**: 10 px Radius, 1 px statt 1,5 px Border, mehr Vertical-Space. Labels in Secondary-Grau, dünner.
+- **Modals** ohne roten Border-Top-Streifen, größerer Radius (18 px).
+- **Info-Boxen** in neutralem System-Grau statt bläulichem Ton.
+
+Alles weiterhin voll responsive; Dark-Mode auf iOS-System-Grays angepasst (Black-Backgrounds, `#1C1C1E` Container).
+
+---
+
 ## [1.36.1] — 2026-07-10
 
 ### Verbessert (Home-Layout)
