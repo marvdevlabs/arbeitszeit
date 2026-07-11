@@ -578,6 +578,123 @@
   .upload-slot.has-file .upload-slot-icon { color: #2EA043; }
   .upload-slot.error .upload-slot-icon { color: var(--db-red); }
 
+  /* ===== iOS-Style Segmented Control (Planspiel-Modus-Umschalter) ===== */
+  .segmented-control {
+    display: inline-flex;
+    width: 100%;
+    background: var(--bg-button-soft);
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 14px;
+    gap: 2px;
+  }
+  .segmented-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-main);
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    letter-spacing: -0.1px;
+    transition: background 0.15s, box-shadow 0.15s, font-weight 0.15s;
+  }
+  .segmented-btn.active {
+    background: var(--bg-card);
+    font-weight: 600;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.04), 0 3px 8px rgba(0,0,0,0.06);
+  }
+  body[data-theme="dark"] .segmented-btn.active {
+    background: #48484A;
+    box-shadow: 0 0 0 0.5px rgba(255,255,255,0.08);
+  }
+
+  /* Preset-Chips (Reihe oberhalb der Stepper) */
+  .preset-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .preset-chip {
+    background: var(--bg-button-soft);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    color: var(--tint);
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s, transform 0.08s;
+  }
+  .preset-chip:hover { background: rgba(60,60,67,0.12); }
+  body[data-theme="dark"] .preset-chip:hover { background: rgba(120,120,128,0.30); }
+  .preset-chip:active { transform: scale(0.96); }
+
+  /* Stepper (Menge einstellen für LRE, Ruf, Nacht, …) */
+  .stepper-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 6px;
+    box-shadow: var(--shadow-card);
+  }
+  .stepper-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 12px 10px;
+    border-radius: 8px;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+  .stepper-row + .stepper-row {
+    border-top: 0.5px solid var(--border-light);
+  }
+  .stepper-row-info {
+    display: flex; flex-direction: column;
+    min-width: 0;
+  }
+  .stepper-label {
+    font-size: 15px; font-weight: 500; color: var(--text-strong);
+    letter-spacing: -0.1px;
+  }
+  .stepper-sub {
+    font-size: 12px; color: var(--text-secondary);
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stepper-controls {
+    display: inline-flex; align-items: center; gap: 0;
+    background: var(--bg-button-soft);
+    border-radius: 100px;
+    padding: 3px;
+    user-select: none;
+  }
+  .stepper-btn {
+    width: 32px; height: 32px;
+    border: none; background: transparent;
+    font-size: 20px; font-weight: 500; line-height: 1;
+    color: var(--tint);
+    border-radius: 50%;
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s, transform 0.08s, opacity 0.15s;
+  }
+  .stepper-btn:hover { background: rgba(60,60,67,0.10); }
+  body[data-theme="dark"] .stepper-btn:hover { background: rgba(120,120,128,0.28); }
+  .stepper-btn:active { transform: scale(0.90); }
+  .stepper-btn:disabled { opacity: 0.35; cursor: default; }
+  .stepper-btn:disabled:hover { background: transparent; }
+  .stepper-value {
+    min-width: 46px; text-align: center;
+    font-size: 15px; font-weight: 600;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.1px;
+  }
+
   .abr-result {
     margin-top: 16px;
     border: none;
@@ -2379,22 +2496,53 @@
         </div>
       </details>
 
-      <div class="upload-grid">
-        <label class="upload-slot" id="progSlotBer">
-          <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>
-          <div class="upload-slot-label">Bereitschafts-Liste (PDF)</div>
-          <div class="upload-slot-hint">DB eTime „Rufbereitschaft"</div>
-          <div class="upload-slot-status" id="progStatusBer">Tippen oder Datei hierhin ziehen</div>
-          <input type="file" id="progFileBer" accept="application/pdf,.pdf">
-        </label>
-        <label class="upload-slot" id="progSlotPvn">
-          <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14h6M9 17h4"/></svg>
-          <div class="upload-slot-label">Personalverwendungsnachweis (PDF)</div>
-          <div class="upload-slot-hint">DB eTime „PVN M"</div>
-          <div class="upload-slot-status" id="progStatusPvn">Tippen oder Datei hierhin ziehen</div>
-          <input type="file" id="progFilePvn" accept="application/pdf,.pdf">
-        </label>
+      <!-- Modus-Umschalter: PDF-Upload vs. Manuelles Planspiel -->
+      <div class="segmented-control" role="tablist" aria-label="Eingabe-Modus">
+        <button type="button" class="segmented-btn active" id="progModePdf" role="tab" onclick="setProgMode('pdf')">
+          Aus PDF laden
+        </button>
+        <button type="button" class="segmented-btn" id="progModeManual" role="tab" onclick="setProgMode('manual')">
+          Planspiel · Manuell
+        </button>
       </div>
+
+      <!-- PDF-Modus -->
+      <div id="progPanelPdf">
+        <div class="upload-grid">
+          <label class="upload-slot" id="progSlotBer">
+            <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>
+            <div class="upload-slot-label">Bereitschafts-Liste (PDF)</div>
+            <div class="upload-slot-hint">DB eTime „Rufbereitschaft"</div>
+            <div class="upload-slot-status" id="progStatusBer">Tippen oder Datei hierhin ziehen</div>
+            <input type="file" id="progFileBer" accept="application/pdf,.pdf">
+          </label>
+          <label class="upload-slot" id="progSlotPvn">
+            <svg class="upload-slot-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M9 14h6M9 17h4"/></svg>
+            <div class="upload-slot-label">Personalverwendungsnachweis (PDF)</div>
+            <div class="upload-slot-hint">DB eTime „PVN M"</div>
+            <div class="upload-slot-status" id="progStatusPvn">Tippen oder Datei hierhin ziehen</div>
+            <input type="file" id="progFilePvn" accept="application/pdf,.pdf">
+          </label>
+        </div>
+      </div>
+
+      <!-- Manuell / Planspiel-Modus -->
+      <div id="progPanelManual" class="hidden">
+        <div class="info-box">
+          <strong>Planspiel:</strong> Zahlen einfach über die +/− Buttons einstellen — Brutto und Netto rechnen sich sofort neu.
+          Präsets probieren oder komplett auf 0 zurücksetzen.
+        </div>
+        <div class="preset-row">
+          <button type="button" class="preset-chip" onclick="progApplyPreset('typical')">Typischer Monat</button>
+          <button type="button" class="preset-chip" onclick="progApplyPreset('ruf-week')">1 Ruf-Woche</button>
+          <button type="button" class="preset-chip" onclick="progApplyPreset('full-week')">Voll-Bereitschaftswoche</button>
+          <button type="button" class="preset-chip" onclick="progApplyPreset('zero')">Alles auf 0</button>
+        </div>
+        <div class="stepper-grid" id="progSteppers">
+          <!-- Wird per JS befüllt (renderProgSteppers) -->
+        </div>
+      </div>
+
       <div class="abr-result empty" id="progResult">
         Noch keine Auswertung. Mindestens eine Datei hochladen — beide sind aussagekräftiger, weil sich Sonntag/Nacht nur aus dem PVN ergeben.
       </div>
@@ -2750,7 +2898,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.39.0';
+  const APP_VERSION = '1.40.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -7188,7 +7336,114 @@
     ber:      null, // { name, sizeKB, raw, parsed:{layoutOk, ext, parsed} }
     pvn:      null,
     working:  false,
+    mode:     'pdf',   // 'pdf' | 'manual'
+    manual: {
+      lre1: 0, lre2: 0, lre3: 0,
+      rufStd: 0, nachtStd: 0,
+      sonntagStd: 0, samstagStd: 0, feiertagStd: 0,
+      ueberzeitStd: 0, efzStd: 0, efbStd: 0,
+    },
   };
+
+  // Definition der Stepper-Zeilen (Label, Schlüssel im manual-State,
+  // Schrittweite, Einheit). Reihenfolge = Anzeige-Reihenfolge im UI.
+  const PROG_STEPPER_DEFS = [
+    { key: 'lre1',        label: 'LRE 1 (Ersteinsatz)',       unit: 'Einsätze', step: 1,   max: 30 },
+    { key: 'lre2',        label: 'LRE 2 (weitere Einsätze)',  unit: 'Einsätze', step: 1,   max: 30 },
+    { key: 'lre3',        label: 'LRE 3 (telefonisch)',       unit: 'Einsätze', step: 1,   max: 30 },
+    { key: 'rufStd',      label: 'Rufbereitschaft',           unit: 'h',        step: 1,   max: 300 },
+    { key: 'nachtStd',    label: 'Nachtzulage',               unit: 'h',        step: 1,   max: 100 },
+    { key: 'sonntagStd',  label: 'Sonntagsstunden',           unit: 'h',        step: 0.5, max: 40 },
+    { key: 'samstagStd',  label: 'Samstagsstunden',           unit: 'h',        step: 0.5, max: 40 },
+    { key: 'feiertagStd', label: 'Feiertagsstunden',          unit: 'h',        step: 0.5, max: 40 },
+    { key: 'ueberzeitStd',label: 'Überzeitstunden',           unit: 'h',        step: 0.5, max: 60 },
+    { key: 'efzStd',      label: 'EFZ (Feiertag-Fortzahlung)',unit: 'h',        step: 0.5, max: 60 },
+    { key: 'efbStd',      label: 'EFB (Krankheit-Fortzahlung)',unit: 'h',       step: 0.5, max: 200 },
+  ];
+
+  const PROG_PRESETS = {
+    zero: { lre1:0,lre2:0,lre3:0,rufStd:0,nachtStd:0,sonntagStd:0,samstagStd:0,feiertagStd:0,ueberzeitStd:0,efzStd:0,efbStd:0 },
+    typical:   { lre1:3, lre2:2, lre3:1, rufStd:60, nachtStd:4, sonntagStd:0, samstagStd:0, feiertagStd:0, ueberzeitStd:0, efzStd:0, efbStd:0 },
+    'ruf-week':{ lre1:2, lre2:1, lre3:2, rufStd:53, nachtStd:4, sonntagStd:0, samstagStd:0, feiertagStd:0, ueberzeitStd:0, efzStd:0, efbStd:0 },
+    'full-week':{lre1:8, lre2:5, lre3:3, rufStd:141, nachtStd:11, sonntagStd:4, samstagStd:7.5, feiertagStd:0, ueberzeitStd:0, efzStd:0, efbStd:0 },
+  };
+
+  function setProgMode(mode) {
+    if (mode !== 'pdf' && mode !== 'manual') return;
+    progState.mode = mode;
+    const pdf    = document.getElementById('progPanelPdf');
+    const manual = document.getElementById('progPanelManual');
+    const btnPdf    = document.getElementById('progModePdf');
+    const btnManual = document.getElementById('progModeManual');
+    if (pdf)    pdf.classList.toggle('hidden',    mode !== 'pdf');
+    if (manual) manual.classList.toggle('hidden', mode !== 'manual');
+    if (btnPdf)    btnPdf.classList.toggle('active',    mode === 'pdf');
+    if (btnManual) btnManual.classList.toggle('active', mode === 'manual');
+    if (mode === 'manual') {
+      renderProgSteppers();
+    }
+    progRender();
+  }
+
+  function renderProgSteppers() {
+    const host = document.getElementById('progSteppers');
+    if (!host) return;
+    const rows = PROG_STEPPER_DEFS.map(def => {
+      const v = progState.manual[def.key];
+      const vDisplay = def.step < 1 ? abrFmtNum(v, 1) : abrFmtNum(v, 0);
+      const rate = progRates[def.key === 'lre1' ? 'LRE1'
+                          : def.key === 'lre2' ? 'LRE2'
+                          : def.key === 'lre3' ? 'LRE3'
+                          : def.key === 'rufStd' ? 'Ruf'
+                          : def.key === 'nachtStd' ? 'Nacht'
+                          : def.key === 'sonntagStd' ? 'Sonntag'
+                          : def.key === 'samstagStd' ? 'Samstag'
+                          : def.key === 'feiertagStd' ? 'Feiertag'
+                          : def.key === 'ueberzeitStd' ? 'Ueberzeit'
+                          : /* EFZ/EFB */              'Fortzahl'];
+      const betrag = abrRound2(v * rate);
+      const cntStr = def.unit === 'h' ? vDisplay + ' h' : vDisplay + '×';
+      return '<div class="stepper-row">' +
+               '<div class="stepper-row-info">' +
+                 '<span class="stepper-label">' + escapeHtml(def.label) + '</span>' +
+                 '<span class="stepper-sub">' + cntStr + ' × ' + abrFmtEUR(rate) + ' = <strong>' + abrFmtEUR(betrag) + '</strong></span>' +
+               '</div>' +
+               '<div class="stepper-controls">' +
+                 '<button type="button" class="stepper-btn"' + (v <= 0 ? ' disabled' : '') + ' onclick="progStepperChange(\'' + def.key + '\', -' + def.step + ')" aria-label="Minus">−</button>' +
+                 '<span class="stepper-value">' + vDisplay + '</span>' +
+                 '<button type="button" class="stepper-btn"' + (v >= def.max ? ' disabled' : '') + ' onclick="progStepperChange(\'' + def.key + '\', ' + def.step + ')" aria-label="Plus">+</button>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+    host.innerHTML = rows;
+  }
+
+  function progStepperChange(key, delta) {
+    const def = PROG_STEPPER_DEFS.find(d => d.key === key);
+    if (!def) return;
+    let v = (progState.manual[key] || 0) + delta;
+    if (v < 0) v = 0;
+    if (v > def.max) v = def.max;
+    // Rundung auf Step
+    v = Math.round(v / def.step) * def.step;
+    // Halbstunden-Präzision
+    if (def.step === 0.5) v = Math.round(v * 2) / 2;
+    else v = Math.round(v);
+    progState.manual[key] = v;
+    renderProgSteppers();
+    progRender();
+  }
+
+  function progApplyPreset(name) {
+    const preset = PROG_PRESETS[name];
+    if (!preset) return;
+    Object.assign(progState.manual, preset);
+    renderProgSteppers();
+    progRender();
+  }
+  window.setProgMode = setProgMode;
+  window.progStepperChange = progStepperChange;
+  window.progApplyPreset = progApplyPreset;
 
   /* ---- eTime-PVN Parser ----
    *
@@ -7387,7 +7642,8 @@
   function progRender() {
     const el = document.getElementById('progResult');
     if (!el) return;
-    if (!progState.ber && !progState.pvn) {
+    // Im Manuell-Modus: gar keine Files nötig, direkt rendern.
+    if (progState.mode !== 'manual' && !progState.ber && !progState.pvn) {
       el.classList.add('empty');
       el.textContent = 'Noch keine Auswertung. Mindestens eine Datei hochladen — beide sind aussagekräftiger, weil sich Sonntag/Nacht nur aus dem PVN ergeben.';
       return;
@@ -7397,37 +7653,50 @@
     const ber = progState.ber && progState.ber.parsed ? progState.ber.parsed : null;
     const pvn = progState.pvn && progState.pvn.parsed ? progState.pvn.parsed : null;
 
-    // Zahlen konsolidieren: PVN hat Vorrang bei LRE/Ruf (kompletter), sonst Ber.
-    // Wenn PVN-Rufbereitschaft ganze Std (z.B. 141) und Ber "Zulagenberechtigende
-    // Rufbereitschaftszeit" (z.B. 141.00) → identisch, PVN gewinnt.
-    const src = (name, ...vals) => {
-      for (const [v, from] of vals) if (v) return { v, from };
-      return { v: 0, from: null };
-    };
-    const lre1 = src('lre1',
-      [pvn && pvn.parsed && pvn.parsed.lre1Cnt, 'PVN'],
-      [ber && ber.parsed && ber.parsed.lre1Cnt, 'Ber']);
-    const lre2 = src('lre2',
-      [pvn && pvn.parsed && pvn.parsed.lre2Cnt, 'PVN'],
-      [ber && ber.parsed && ber.parsed.lre2Cnt, 'Ber']);
-    const lre3 = src('lre3',
-      [pvn && pvn.parsed && pvn.parsed.lre3Cnt, 'PVN'],
-      [ber && ber.parsed && ber.parsed.lre3Cnt, 'Ber']);
-    const ruf  = src('ruf',
-      [pvn && pvn.parsed && pvn.parsed.rufStd, 'PVN'],
-      [ber && ber.parsed && ber.parsed.zulageBerStd, 'Ber']);
-    // Nacht wird von der Abrechnungsstelle auf ganze Std aufgerundet.
-    // Beispiel: 3:42 im PVN → 4,00 Std in der Abrechnung. Verifiziert am
-    // Januar-2026-Test (13,80 € Prognose ohne Rundung vs. 14,92 € reale
-    // Nachtzulage — 4,00 × 3,73). Deshalb hier Math.ceil.
-    const nachtRaw = pvn && pvn.parsed ? pvn.parsed.nachtStd    : 0;
-    const nacht    = nachtRaw > 0 ? Math.ceil(nachtRaw - 1e-9)  : 0;
-    const sonntag  = pvn && pvn.parsed ? pvn.parsed.sonntagStd  : 0;
-    const samstag  = pvn && pvn.parsed ? pvn.parsed.samstagStd  : 0;
-    const feiertag = pvn && pvn.parsed ? pvn.parsed.feiertagStd : 0;
-    const ueberzeit= pvn && pvn.parsed ? pvn.parsed.ueberzeitStd: 0;
-    const efz      = pvn && pvn.parsed ? pvn.parsed.efzStd      : 0;
-    const efb      = pvn && pvn.parsed ? pvn.parsed.efbStd      : 0;
+    // Zahlen konsolidieren — je nach Modus.
+    let lre1, lre2, lre3, ruf, nacht, sonntag, samstag, feiertag, ueberzeit, efz, efb;
+
+    if (progState.mode === 'manual') {
+      const m = progState.manual;
+      lre1 = { v: m.lre1, from: 'manuell' };
+      lre2 = { v: m.lre2, from: 'manuell' };
+      lre3 = { v: m.lre3, from: 'manuell' };
+      ruf  = { v: m.rufStd, from: 'manuell' };
+      nacht    = m.nachtStd;
+      sonntag  = m.sonntagStd;
+      samstag  = m.samstagStd;
+      feiertag = m.feiertagStd;
+      ueberzeit= m.ueberzeitStd;
+      efz      = m.efzStd;
+      efb      = m.efbStd;
+    } else {
+      // Zahlen konsolidieren: PVN hat Vorrang bei LRE/Ruf (kompletter), sonst Ber.
+      const src = (name, ...vals) => {
+        for (const [v, from] of vals) if (v) return { v, from };
+        return { v: 0, from: null };
+      };
+      lre1 = src('lre1',
+        [pvn && pvn.parsed && pvn.parsed.lre1Cnt, 'PVN'],
+        [ber && ber.parsed && ber.parsed.lre1Cnt, 'Ber']);
+      lre2 = src('lre2',
+        [pvn && pvn.parsed && pvn.parsed.lre2Cnt, 'PVN'],
+        [ber && ber.parsed && ber.parsed.lre2Cnt, 'Ber']);
+      lre3 = src('lre3',
+        [pvn && pvn.parsed && pvn.parsed.lre3Cnt, 'PVN'],
+        [ber && ber.parsed && ber.parsed.lre3Cnt, 'Ber']);
+      ruf  = src('ruf',
+        [pvn && pvn.parsed && pvn.parsed.rufStd, 'PVN'],
+        [ber && ber.parsed && ber.parsed.zulageBerStd, 'Ber']);
+      // Nacht wird von der Abrechnungsstelle auf ganze Std aufgerundet.
+      const nachtRaw = pvn && pvn.parsed ? pvn.parsed.nachtStd    : 0;
+      nacht    = nachtRaw > 0 ? Math.ceil(nachtRaw - 1e-9)  : 0;
+      sonntag  = pvn && pvn.parsed ? pvn.parsed.sonntagStd  : 0;
+      samstag  = pvn && pvn.parsed ? pvn.parsed.samstagStd  : 0;
+      feiertag = pvn && pvn.parsed ? pvn.parsed.feiertagStd : 0;
+      ueberzeit= pvn && pvn.parsed ? pvn.parsed.ueberzeitStd: 0;
+      efz      = pvn && pvn.parsed ? pvn.parsed.efzStd      : 0;
+      efb      = pvn && pvn.parsed ? pvn.parsed.efbStd      : 0;
+    }
 
     // Monat bestimmen (fuer Header)
     const mo = (ber && ber.parsed && ber.parsed.month) ? { m: ber.parsed.month, y: ber.parsed.year }
@@ -7459,13 +7728,13 @@
       { key: 'LRE2',      label: 'LRE 2 (weitere Einsätze)',   cnt: lre2.v, unit: 'Einsätze', rate: progRates.LRE2,      src: lre2.from },
       { key: 'LRE3',      label: 'LRE 3 (telefonisch)',        cnt: lre3.v, unit: 'Einsätze', rate: progRates.LRE3,      src: lre3.from },
       { key: 'Ruf',       label: 'Rufbereitschaftszulage',     cnt: ruf.v,  unit: 'h',        rate: progRates.Ruf,       src: ruf.from  },
-      { key: 'Nacht',     label: 'Nachtzulage',                cnt: nacht,  unit: 'h',        rate: progRates.Nacht,     src: pvn ? 'PVN' : null },
-      { key: 'Sonntag',   label: 'Sonntagszulage',             cnt: sonntag,unit: 'h',        rate: progRates.Sonntag,   src: pvn ? 'PVN' : null },
-      { key: 'Samstag',   label: 'Samstagszulage',             cnt: samstag,unit: 'h',        rate: progRates.Samstag,   src: pvn ? 'PVN' : null },
-      { key: 'Feiertag',  label: 'Feiertagszulage',            cnt: feiertag,unit:'h',        rate: progRates.Feiertag,  src: pvn ? 'PVN' : null },
-      { key: 'Ueberzeit', label: 'Überzeitzulage',             cnt: ueberzeit,unit:'h',       rate: progRates.Ueberzeit, src: pvn ? 'PVN' : null },
-      { key: 'EFZ',       label: 'Fortzahlung Feiertag (EFZ)', cnt: efz,    unit: 'h',        rate: progRates.Fortzahl,  src: pvn ? 'PVN' : null },
-      { key: 'EFB',       label: 'Fortzahlung Krankheit/Fb',   cnt: efb,    unit: 'h',        rate: progRates.Fortzahl,  src: pvn ? 'PVN' : null },
+      { key: 'Nacht',     label: 'Nachtzulage',                cnt: nacht,  unit: 'h',        rate: progRates.Nacht,     src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'Sonntag',   label: 'Sonntagszulage',             cnt: sonntag,unit: 'h',        rate: progRates.Sonntag,   src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'Samstag',   label: 'Samstagszulage',             cnt: samstag,unit: 'h',        rate: progRates.Samstag,   src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'Feiertag',  label: 'Feiertagszulage',            cnt: feiertag,unit:'h',        rate: progRates.Feiertag,  src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'Ueberzeit', label: 'Überzeitzulage',             cnt: ueberzeit,unit:'h',       rate: progRates.Ueberzeit, src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'EFZ',       label: 'Fortzahlung Feiertag (EFZ)', cnt: efz,    unit: 'h',        rate: progRates.Fortzahl,  src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
+      { key: 'EFB',       label: 'Fortzahlung Krankheit/Fb',   cnt: efb,    unit: 'h',        rate: progRates.Fortzahl,  src: progState.mode === 'manual' ? 'manuell' : (pvn ? 'PVN' : null) },
     ];
     let sumZulagen = 0;
     rows.forEach(r => { r.betrag = abrRound2(r.cnt * r.rate); sumZulagen += r.betrag; });
@@ -7476,11 +7745,15 @@
     // HTML rendern
     let html = '';
     html += '<div class="abr-result-block">';
-    html += '<h4>Prognose ' + escapeHtml(moLabel) + '</h4>';
+    html += '<h4>Prognose ' + escapeHtml(progState.mode === 'manual' ? 'Planspiel' : moLabel) + '</h4>';
     html += '<div class="abr-status-row">';
-    if (progState.ber) html += '<span class="abr-status-badge ' + (ber && ber.layoutOk ? 'ok' : 'err') + '">Bereitschafts-Liste: ' + (ber && ber.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
-    if (progState.pvn) html += '<span class="abr-status-badge ' + (pvn && pvn.layoutOk ? 'ok' : 'err') + '">PVN: ' + (pvn && pvn.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
-    if (!progState.ber || !progState.pvn) html += '<span class="abr-status-badge info">Nur eine Quelle — Prognose kann unvollständig sein</span>';
+    if (progState.mode === 'manual') {
+      html += '<span class="abr-status-badge info">Manuelle Eingabe · Werte kannst du oben mit +/− anpassen</span>';
+    } else {
+      if (progState.ber) html += '<span class="abr-status-badge ' + (ber && ber.layoutOk ? 'ok' : 'err') + '">Bereitschafts-Liste: ' + (ber && ber.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
+      if (progState.pvn) html += '<span class="abr-status-badge ' + (pvn && pvn.layoutOk ? 'ok' : 'err') + '">PVN: ' + (pvn && pvn.layoutOk ? 'erkannt' : 'unbekannt') + '</span>';
+      if (!progState.ber || !progState.pvn) html += '<span class="abr-status-badge info">Nur eine Quelle — Prognose kann unvollständig sein</span>';
+    }
     html += '</div>';
     if (layoutMsgs.length) html += '<div class="abr-hint">' + layoutMsgs.map(escapeHtml).join('<br>') + '</div>';
     html += '</div>';

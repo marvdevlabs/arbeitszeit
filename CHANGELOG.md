@@ -7,6 +7,28 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.40.0] — 2026-07-10
+
+### Neu — LRE-Planspiel
+
+Ganz oben in „Nächste Abrechnung" gibt's jetzt ein **Segmented Control** wie in iOS:
+
+```
+[ Aus PDF laden ]  [ Planspiel · Manuell ]
+```
+
+Im Planspiel-Modus stellst du LRE 1/2/3, Rufbereitschaft, Nacht, Sonntag, Samstag, Feiertag, Überzeit, EFZ, EFB **einfach mit ± Buttons** ein. Jede Änderung rechnet **Brutto & Netto sofort** neu — inklusive Netto-Split „Was bringt die Bereitschaft davon netto?".
+
+**Vier Presets** als Startpunkt:
+- „Typischer Monat" — 3 LRE1, 2 LRE2, 1 LRE3, 60 h Ruf
+- „1 Ruf-Woche" — passend zu deiner Januar-Bereitschaft (2/1/2, 53 h)
+- „Voll-Bereitschaftswoche" — deine Juni-Zahlen (8/5/3, 141 h)
+- „Alles auf 0" — Zurücksetzen
+
+Perfekt für die Frage: „Was bringt es mir wenn ich diesen Monat noch eine Nachtbereitschaft dranhänge?" oder „Wie sieht das aus wenn ich die Zulagen halbiere?".
+
+---
+
 ## [1.39.0] — 2026-07-10
 
 ### Verändert
