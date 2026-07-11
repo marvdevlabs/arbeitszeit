@@ -2505,6 +2505,25 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalPersonalGate">
+  <div class="modal-card">
+    <div class="modal-title" id="modalPersonalGateTitle">Persönliche Daten fehlen</div>
+    <div class="modal-body">
+      <p id="modalPersonalGateText">
+        Für <strong>„Abrechnung prüfen"</strong> und <strong>„Nächste Abrechnung"</strong> brauchen wir kurz dein <strong>Grundgehalt</strong> und dein <strong>Bundesland</strong>.
+      </p>
+      <p style="color:var(--text-secondary);font-size:13px;margin-top:8px;">
+        Wird nur lokal in deinem Browser gespeichert — keine Übertragung, kein Server.<br>
+        <strong>Tageserfassung</strong> geht auch ohne, du kannst direkt loslegen.
+      </p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePersonalGateModal()">Später</button>
+      <button class="btn" onclick="openPersonalDataFromModal()">Jetzt ausfüllen</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalReset">
   <div class="modal-card">
     <div class="modal-title">Neuer Tag starten?</div>
@@ -2723,7 +2742,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.37.0';
+  const APP_VERSION = '1.38.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6256,8 +6275,41 @@
   // Merker, welches Tool angesteuert wurde als das Gate blockte —
   // sobald Personal-Daten komplett sind, dorthin auto-navigieren.
   let _pendingToolAfterGate = null;
+  const PERSONAL_WELCOME_KEY = 'personal_welcome_seen_v1';
   function showPersonalGateHint(intendedTool) {
     _pendingToolAfterGate = intendedTool;
+    // Modal öffnen mit klarem Text (welches Tool wollte er, was fehlt)
+    const title = document.getElementById('modalPersonalGateTitle');
+    const text  = document.getElementById('modalPersonalGateText');
+    const toolLabel = intendedTool === 'abrechnung' ? 'Abrechnung prüfen' : 'Nächste Abrechnung';
+    if (title) title.textContent = 'Persönliche Daten fehlen';
+    if (text) {
+      text.innerHTML =
+        'Für <strong>„' + toolLabel + '"</strong> brauchen wir noch dein ' +
+        '<strong>Grundgehalt</strong> und dein <strong>Bundesland</strong>. ' +
+        'Danach geht\'s automatisch weiter.';
+    }
+    openPersonalGateModal();
+    // Zusätzlich Status im Zusammenfassungs-Chip auf warn setzen
+    const summary = document.getElementById('abrPersonalSummary');
+    if (summary) {
+      summary.textContent = 'Bitte Grundgehalt + Bundesland ausfüllen';
+      summary.classList.add('gate-warn');
+    }
+  }
+
+  function openPersonalGateModal() {
+    const el = document.getElementById('modalPersonalGate');
+    if (el) el.classList.remove('hidden');
+  }
+  function closePersonalGateModal() {
+    const el = document.getElementById('modalPersonalGate');
+    if (el) el.classList.add('hidden');
+    // Merker: Welcome wurde gesehen (auch bei "Später")
+    try { localStorage.setItem(PERSONAL_WELCOME_KEY, '1'); } catch (e) {}
+  }
+  function openPersonalDataFromModal() {
+    closePersonalGateModal();
     const card = document.getElementById('abrPersonalCard');
     if (card) {
       card.setAttribute('open', '');
@@ -6265,12 +6317,33 @@
       setTimeout(() => card.classList.remove('gate-pulse'), 2200);
       card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    const summary = document.getElementById('abrPersonalSummary');
-    if (summary) {
-      summary.textContent = 'Bitte erst Grundgehalt + Bundesland ausfüllen — dann geht\'s automatisch weiter.';
-      summary.classList.add('gate-warn');
-    }
+    // Ersten Fokus auf Grundgehalt (springt zur wichtigsten Eingabe)
+    setTimeout(() => {
+      const gg = document.getElementById('abrGrundgehalt');
+      if (gg) gg.focus();
+    }, 350);
   }
+  // Beim Verlassen ohne Ausfüllen NIE ein zweites Welcome-Modal
+  // (der Rücksprung bei Tool-2/3-Klick zeigt das Gate-Modal, das ist ok)
+  function maybeShowPersonalWelcome() {
+    if (abrPersonalGateOk()) return;
+    let seen = false;
+    try { seen = localStorage.getItem(PERSONAL_WELCOME_KEY) === '1'; } catch (e) {}
+    if (seen) return;
+    // Welcome-Text (leicht anders als Gate)
+    const title = document.getElementById('modalPersonalGateTitle');
+    const text  = document.getElementById('modalPersonalGateText');
+    if (title) title.textContent = 'Willkommen! 👋';
+    if (text) {
+      text.innerHTML =
+        'Damit <strong>„Abrechnung prüfen"</strong> und <strong>„Nächste Abrechnung"</strong> funktionieren, ' +
+        'brauchen wir einmalig dein <strong>Grundgehalt</strong> und dein <strong>Bundesland</strong>. ' +
+        'Dauert 30 Sekunden.';
+    }
+    openPersonalGateModal();
+  }
+  window.closePersonalGateModal = closePersonalGateModal;
+  window.openPersonalDataFromModal = openPersonalDataFromModal;
   function abrPersonalSummary() {
     if (!abrPersonalIsComplete()) return 'Noch nicht eingestellt — bitte einmalig ausfüllen';
     const stRoman = ['','I','II','III','IV','V','VI'][abrPersonal.steuerklasse] || abrPersonal.steuerklasse;
@@ -7602,6 +7675,10 @@
   // Wird nicht ueber dem Restore-Modal oder Import-Hash gezeigt.
   if (!isOnboardingDone() && !restoredStep && !hash.startsWith('#import=')) {
     setTimeout(showOnboarding, 350);
+  } else if (currentTool === 'home' && !hasOpenDay && !hash.startsWith('#import=')) {
+    // Kein Onboarding zu zeigen? Trotzdem: wenn Personal-Daten fehlen und
+    // der User noch nie das Welcome-Modal geschlossen hat → einmal anzeigen.
+    setTimeout(maybeShowPersonalWelcome, 500);
   }
 </script>
 </body>

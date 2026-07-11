@@ -7,6 +7,16 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.38.0] — 2026-07-10
+
+### Neu
+- **Warnungs-Modal beim Klick auf Tool 2/3 ohne Personal-Daten** — statt nur subtiler Card-Puls. Klar geschriebener Text („Für Abrechnung prüfen brauchen wir noch dein Grundgehalt und Bundesland — danach geht's automatisch weiter"), zwei Buttons: „Später" oder „Jetzt ausfüllen". Beim Klick auf „Ausfüllen" öffnet die Personal-Card, scrollt in den Viewport, springt in das Grundgehalt-Feld.
+- **Welcome-Popup beim ersten Besuch ohne Personal-Daten** — freundlicher Willkommens-Text mit derselben Ausfüll-Aufforderung. Erscheint nur beim ersten Mal, danach nie wieder (LocalStorage-Merker). Blockiert nicht — Tageserfassung bleibt frei.
+
+Damit sieht man die Aufforderung sofort und nicht erst nach zwei Klicks.
+
+---
+
 ## [1.37.0] — 2026-07-10
 
 ### Verändert (iOS-Look & -Feel)
