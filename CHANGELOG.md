@@ -7,6 +7,32 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.41.0] — 2026-07-10
+
+### Neu — Setup Automagic (Feature D für v2.0)
+
+Persönliche Daten müssen nicht mehr getippt werden. Oben im Persönliche-Daten-Modal steht jetzt eine Aktions-Karte:
+
+> **Automatisch aus deiner Abrechnung** 
+> Statt alles selbst zu tippen — lade eine PDF hoch, wir füllen die Felder für dich aus.
+> [ PDF wählen ]
+
+**Was extrahiert wird**:
+- **Grundgehalt** aus Lohnart 105 (Zahlbetrag aus MTE)
+- **Bundesland** aus Wohnadresse (deutsche PLZ → Bundesland-Heuristik, 95 %+ Trefferquote)
+- **Steuerklasse** aus dem HEAD02-Feld (`F<n>O`)
+- **KV-Zusatzbeitrag** aus dem KV-Prozentwert der Lohnart 740 (rückgerechnet)
+- **Konfession** aus Kirchensteuer-Zeile 720 (Default `rk` bei `rk/ev`)
+- **Kinderfreibeträge** aus dem Kopf-Datenblock
+
+Nach dem Import Toast-Bestätigung „6 Felder automatisch ausgefüllt · prüfe kurz die Werte", Hero-Karte wird grün, Formular ist sofort befüllt.
+
+**Verifiziert** an Marvins Feb-2026-Abrechnung: alle sechs Werte korrekt extrahiert (3.570,49 € · NW · III · 2,68 % · rk · 1,0).
+
+Aus Datenschutz-Sicht unverändert: die PDF wird ausschließlich im Browser gelesen, kein Upload, kein Server.
+
+---
+
 ## [1.40.0] — 2026-07-10
 
 ### Neu — LRE-Planspiel

@@ -578,6 +578,57 @@
   .upload-slot.has-file .upload-slot-icon { color: #2EA043; }
   .upload-slot.error .upload-slot-icon { color: var(--db-red); }
 
+  /* ===== Autofill-Hero (Setup Automagic im Personal-Modal) ===== */
+  .autofill-hero {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 14px 14px 12px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(236,0,22,0.10) 0%, rgba(236,0,22,0.04) 100%);
+    border: 0.5px solid rgba(236,0,22,0.15);
+    margin-bottom: 14px;
+  }
+  body[data-theme="dark"] .autofill-hero {
+    background: linear-gradient(135deg, rgba(236,0,22,0.18) 0%, rgba(236,0,22,0.08) 100%);
+    border-color: rgba(236,0,22,0.25);
+  }
+  .autofill-hero-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--tint);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .autofill-hero-icon svg { width: 22px; height: 22px; fill: #fff; stroke: #fff; }
+  .autofill-hero-body { min-width: 0; }
+  .autofill-hero-title {
+    font-size: 14px; font-weight: 600; color: var(--text-strong);
+    letter-spacing: -0.1px;
+  }
+  .autofill-hero-desc {
+    font-size: 12.5px; color: var(--text-secondary);
+    line-height: 1.4; margin-top: 1px;
+  }
+  .autofill-hero-btn {
+    padding: 9px 14px !important; font-size: 13.5px !important;
+    min-height: 36px !important; display: inline-flex; align-items: center;
+    white-space: nowrap;
+  }
+  .autofill-hero.busy {
+    opacity: 0.7; pointer-events: none;
+  }
+  .autofill-hero.done {
+    background: linear-gradient(135deg, rgba(46,160,67,0.12) 0%, rgba(46,160,67,0.04) 100%);
+    border-color: rgba(46,160,67,0.28);
+  }
+  .autofill-hero.done .autofill-hero-icon { background: #2EA043; }
+  @media (max-width: 460px) {
+    .autofill-hero { grid-template-columns: 44px 1fr; }
+    .autofill-hero-btn { grid-column: 1 / -1; justify-content: center; }
+  }
+
   /* ===== iOS-Style Segmented Control (Planspiel-Modus-Umschalter) ===== */
   .segmented-control {
     display: inline-flex;
@@ -2574,8 +2625,22 @@
   <div class="modal-card modal-card-wide">
     <div class="modal-title">Persönliche Daten</div>
     <div class="modal-body">
+      <div class="autofill-hero" id="autofillHero">
+        <div class="autofill-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="autofill-hero-body">
+          <div class="autofill-hero-title">Automatisch aus deiner Abrechnung</div>
+          <div class="autofill-hero-desc">Statt alles selbst zu tippen — lade eine PDF hoch, wir füllen die Felder für dich aus.</div>
+        </div>
+        <label class="btn autofill-hero-btn" for="autofillFile" id="autofillHeroBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-right:6px;vertical-align:-3px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          PDF wählen
+        </label>
+        <input type="file" id="autofillFile" accept="application/pdf,.pdf" style="display:none;">
+      </div>
       <div class="abr-hint" style="margin-bottom:14px;">
-        Pflicht für <strong>Abrechnung prüfen</strong> und <strong>Nächste Abrechnung</strong>. Wird nur lokal im Browser gespeichert — keine Übertragung, kein Server.
+        Alles bleibt lokal im Browser — keine Übertragung, kein Server.
       </div>
       <div class="abr-personal-form" id="abrPersonalCard">
         <div class="form-row">
@@ -2898,7 +2963,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.40.0';
+  const APP_VERSION = '1.41.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -6476,6 +6541,174 @@
       const gg = document.getElementById('abrGrundgehalt');
       if (gg) gg.focus();
     }, 200);
+    // Hero zurück in Grundzustand, falls schon mal befüllt
+    const hero = document.getElementById('autofillHero');
+    if (hero) hero.classList.remove('done', 'busy');
+  }
+
+  /* ====== Setup Automagic: Personal-Daten aus PDF-Abrechnung importieren ====== */
+
+  // Deutsche PLZ (erste zwei Stellen) → Bundesland. Heuristisch, aber >95%.
+  function plzToBundesland(plz) {
+    const p = parseInt(String(plz).substring(0, 2), 10);
+    if (isNaN(p)) return null;
+    if (p >= 1 && p <= 9) return 'SN';           // Sachsen
+    if (p === 10 || p === 12 || p === 13 || p === 14) return 'BE';  // Berlin
+    if (p === 11 || p === 15 || p === 16) return 'BB';              // Brandenburg
+    if (p >= 17 && p <= 19) return 'MV';
+    if (p >= 20 && p <= 22) return 'HH';
+    if (p >= 23 && p <= 25) return 'SH';
+    if (p === 26 || p === 27) return 'NI';
+    if (p === 28) return 'HB';
+    if (p >= 29 && p <= 31) return 'NI';
+    if (p === 32 || p === 33) return 'NW';
+    if (p === 34 || p === 35 || p === 36) return 'HE';
+    if (p === 37 || p === 38) return 'NI';
+    if (p === 39) return 'ST';
+    if (p >= 40 && p <= 59) return 'NW';
+    if (p >= 60 && p <= 65) return 'HE';
+    if (p === 66) return 'SL';
+    if (p === 67 || p === 68) return 'RP';
+    if (p >= 69 && p <= 88) return 'BW';
+    if (p === 89) return 'BW';
+    if (p >= 90 && p <= 96) return 'BY';
+    if (p === 97) return 'BY';
+    if (p === 98 || p === 99) return 'TH';
+    return null;
+  }
+
+  // Ergebnis-Struktur: { grundgehalt, bundesland, steuerklasse, kvZusatz, konfession, kinder }
+  function extractPersonalFromAbrechnungText(text) {
+    const out = {};
+    let m;
+
+    // 1) Monatliches Grundgehalt aus Lohnart 105 (MTE = Monatstabellenentgelt)
+    //    Beispiel: "Zahlbetrag aus MTE  105                       357049"
+    m = text.match(/Zahlbetrag\s+aus\s+MTE\s+105\s+(\d{5,7})/i);
+    if (m) {
+      const cents = parseInt(m[1], 10);
+      if (cents > 100000 && cents < 20000000) out.grundgehalt = cents / 100;
+    }
+
+    // 2) Bundesland aus Wohnadresse: erste 5-stellige PLZ die 40000-99999 hat
+    //    (die Absender-PLZ 96054 Bamberg würde sonst matchen — deswegen suchen wir
+    //    lieber im "Zustell-Adresse"-Block, d.h. NACH dem Adress-Header).
+    const plzMatches = [...text.matchAll(/\b(\d{5})\s+([A-ZÄÖÜ][A-Za-zäöüß.\-]+)/g)];
+    // Filter: Absender ist DB-Service (Bamberg 96054, Frankfurt 60327, etc.).
+    // Wir nehmen die erste PLZ die NICHT zu einer DB-typischen Adresse gehört.
+    const dbAbsenderPlz = new Set(['96054', '60327', '96450', '10365']);
+    for (const pm of plzMatches) {
+      const plz = pm[1];
+      if (dbAbsenderPlz.has(plz)) continue;
+      const bl = plzToBundesland(plz);
+      if (bl) { out.bundesland = bl; break; }
+    }
+
+    // 3) Steuerklasse aus HEAD02-Feld "F<n>O" (Kürzel für Steuerklasse+Faktor)
+    m = text.match(/\bF([1-6])O\b/);
+    if (m) out.steuerklasse = parseInt(m[1], 10);
+
+    // 4) KV-Zusatz aus Prozent-Spalte der Krankenversicherungs-Zeile.
+    //    Beispiel: "Krankenversicherung 740   864   5173-  Arbg. 347,78   34778"
+    //    864 = 8,64% AN-Gesamtsatz. AN-Basisanteil KV allg. = 7,3 %,
+    //    Rest ist halber Zusatzbeitrag. Zusatz gesamt = (KV-% - 7,3) × 2.
+    m = text.match(/Krankenversicherung\s+740\s+(\d{3})\b/);
+    if (m) {
+      const pct = parseInt(m[1], 10) / 100;
+      const halbZusatz = pct - 7.3;
+      if (halbZusatz > 0 && halbZusatz < 3) {
+        out.kvZusatz = Math.round(halbZusatz * 200) / 100;
+      }
+    }
+
+    // 5) Konfession — sichtbar per Lohnart 720 (Kirchensteuer wurde einbehalten).
+    //    Wenn "rk/ev" im Text steht, ist der Steuerpflichtige einer der beiden —
+    //    wir defaulten auf 'rk' (User kann jederzeit umstellen).
+    if (/Kirchensteuer\s+720/i.test(text)) {
+      if (/\brk\/ev\b/i.test(text) || /\bev\/rk\b/i.test(text)) {
+        out.konfession = 'rk';   // Default bei Ehe-Konstellation
+      } else if (/\bev\b/i.test(text)) {
+        out.konfession = 'ev';
+      } else if (/\brk\b/i.test(text)) {
+        out.konfession = 'rk';
+      } else {
+        out.konfession = 'rk';
+      }
+    } else {
+      out.konfession = 'keine';
+    }
+
+    // 6) Kinderfreibeträge — in der Payslip-Kopfzeile steht z.B. "3 1,0 rk/ev".
+    //    Wir suchen nach dem Muster: einzelne Zahl (StKl) + eine Zahl mit Komma
+    //    (Kinderfreibetrag).
+    m = text.match(/\n\s*[1-6]\s*\n\s*(\d{1,2}[,.]\d)\s*\n\s*(rk|ev|rk\/ev|ev\/rk|keine)/i);
+    if (m) {
+      const kinder = parseFloat(m[1].replace(',', '.'));
+      if (kinder >= 0 && kinder <= 8) out.kinder = kinder;
+    }
+
+    return out;
+  }
+
+  async function handleAutofillFile(file) {
+    if (!file) return;
+    const isPdf = (file.type === 'application/pdf') || /\.pdf$/i.test(file.name);
+    if (!isPdf) {
+      showToast('Nur PDF-Dateien werden aktuell unterstützt.');
+      return;
+    }
+    const hero = document.getElementById('autofillHero');
+    if (hero) hero.classList.add('busy');
+    try {
+      const buf = await file.arrayBuffer();
+      const ext = await extractTextFromPdf(buf);
+      // Nur wenn's tatsächlich eine Abrechnung ist, sonst Abbruch.
+      if (!looksLikeAbrechnung(ext.full)) {
+        if (hero) hero.classList.remove('busy');
+        showToast('Sieht nicht wie eine DB-Abrechnungsbescheinigung aus.');
+        return;
+      }
+      const data = extractPersonalFromAbrechnungText(ext.full);
+      // Werte auf abrPersonal anwenden
+      let count = 0;
+      if (typeof data.grundgehalt === 'number' && data.grundgehalt > 0) {
+        abrPersonal.grundgehalt = data.grundgehalt; count++;
+      }
+      if (data.bundesland && BUNDESLAENDER.some(b => b.code === data.bundesland)) {
+        abrPersonal.bundesland = data.bundesland; count++;
+      }
+      if (typeof data.steuerklasse === 'number' && data.steuerklasse >= 1 && data.steuerklasse <= 6) {
+        abrPersonal.steuerklasse = data.steuerklasse; count++;
+      }
+      if (typeof data.kvZusatz === 'number' && data.kvZusatz >= 0 && data.kvZusatz <= 5) {
+        abrPersonal.kvZusatz = data.kvZusatz; count++;
+      }
+      if (data.konfession && ['keine','ev','rk'].includes(data.konfession)) {
+        abrPersonal.konfession = data.konfession; count++;
+      }
+      if (typeof data.kinder === 'number' && data.kinder >= 0 && data.kinder <= 8) {
+        abrPersonal.kinder = data.kinder; count++;
+      }
+      saveAbrPersonal();
+      // Formular neu befüllen
+      initAbrPersonalForm();
+      if (hero) { hero.classList.remove('busy'); hero.classList.add('done'); }
+      showToast(count + ' Feld' + (count === 1 ? '' : 'er') + ' automatisch ausgefüllt · prüfe kurz die Werte');
+    } catch (e) {
+      console.warn('Autofill failed:', e);
+      if (hero) hero.classList.remove('busy');
+      showToast('Konnte die PDF nicht auslesen.');
+    }
+  }
+  function initAutofillInput() {
+    const inp = document.getElementById('autofillFile');
+    if (!inp) return;
+    inp.addEventListener('change', (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      handleAutofillFile(f);
+      // reset value damit gleicher File erneut ausgewählt werden kann
+      inp.value = '';
+    });
   }
   function closePersonalDataModal() {
     const m = document.getElementById('modalPersonalData');
@@ -7927,6 +8160,7 @@
   loadProgRates();
   initProgRatesForm();
   progInitFileInputs();
+  initAutofillInput();
 
   // Welches Tool soll initial gezeigt werden?
   // Regel: IMMER Toolbox-Startseite. Ausnahme nur URL-Hash:
