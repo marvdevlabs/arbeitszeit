@@ -7,6 +7,53 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.0.0] — 2026-07-11 · **Major Release**
+
+Nach fünfundzwanzig Point-Releases zwischen v1.31.1 und v1.42.0 der große Milestone: **DB Toolbox 2.0**.
+
+### Was ist neu seit v1.x
+
+**Neues Werkzeug: 🔮 Nächste Abrechnung**
+- Brutto- und Netto-Vorhersage der kommenden Abrechnung
+- Zwei Modi: PDF-Import (Bereitschafts-Liste + PVN) oder **Planspiel** mit ± Steppern
+- Vier Presets im Planspiel (Typischer Monat / 1 Ruf-Woche / Voll-Bereitschaft / Reset)
+- Netto-Split „Was bringt die Bereitschaft davon netto?" mit marginaler Netto-Quote
+- Prognose auf **±1 %** genau (verifiziert am Januar-2026-Ist-Fall)
+
+**⚡ Setup Automagic**
+- Foto/PDF einer Abrechnung → App liest Grundgehalt, Steuerklasse, Konfession, Bundesland, KV-Zusatz, Kinderfreibeträge automatisch
+- Ein Tap statt neun Felder tippen — der Onboarding-Wow
+
+**Onboarding neu**
+- Vorher 8 Slides, jetzt 3 — mit Setup Automagic als Hero-Slide
+- Nach erfolgreichem Import ist das Onboarding automatisch fertig
+
+**Netto-Berechnung PAP-genau**
+- §32a EStG-Tarif mit `Math.floor`-Rundungen wie im BMF-Programmablaufplan
+- Vorsorgepauschale nach §39b Abs. 2 EStG (tatsächliche AN-Beiträge) + Mindestpauschale-Deckel nach Abs. 4
+- Neues optionales Feld **„Steuerfreie Bezüge pro Monat"** (bAV, VBL, Rad-Verzicht) — macht die Prognose bei DB-Mitarbeitern pfennig-genau
+
+**iOS-Style UI**
+- Header: rotes Voll-Panel raus, jetzt heller NavBar-Look mit Backdrop-Blur
+- DB-Rot nur noch als Akzent (`--tint`), nicht mehr als Flächenfarbe
+- Flat Buttons, 44 px Mindesthöhe, Segmented Controls, iOS-System-Grays
+- Persönliche Daten in Zahnrad-Modal (Header oben rechts) statt Home-Formular
+- Warn-Modal + Welcome-Popup wenn Personal-Daten fehlen
+
+**PWA-Politur**
+- Manifest deutlich reicher: `display_override`, Categories, Icon-Datei-Referenz statt inline-Data-URL
+- App-Shortcuts aus dem Home-Screen-Icon (langes Drücken)
+- Meta-Tags für alle relevanten iOS-Auflösungen, Safari Pinned-Tab Mask-Icon
+- Neues `icon-maskable.svg` mit iOS-Safe-Zone
+- Service-Worker-Cache auf v2.0.0 hochgezogen
+
+**Sonstiges**
+- README auf 3-Tools-Story aktualisiert
+- Deutsche Dezimal-Konvention konsequent (Komma statt Punkt) mit `lang="de"` auf Zahleninputs
+- Home-Layout responsive mit 3-Spalten-Grid ab Desktop-Breite
+
+---
+
 ## [1.42.0] — 2026-07-10
 
 ### Verändert — PWA-Politur (Feature C für v2.0)
