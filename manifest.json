@@ -3,19 +3,52 @@
   "short_name": "DB Toolbox",
   "description": "Toolbox für DB-Techniker: Tageserfassung (AE-Werte) und Abrechnungs-Check (Bereitschaft / LRE / Netto). Kein offizielles DB-Tool.",
   "lang": "de",
+  "dir": "ltr",
   "id": "/arbeitszeit/",
   "start_url": "/arbeitszeit/",
   "scope": "/arbeitszeit/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
-  "background_color": "#F2F3F5",
-  "theme_color": "#2D3142",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "categories": ["productivity", "utilities", "finance"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/arbeitszeit/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/arbeitszeit/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tageserfassung",
+      "short_name": "Tag",
+      "description": "AE-Werte für heute erfassen",
+      "url": "/arbeitszeit/",
+      "icons": [{ "src": "/arbeitszeit/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Nächste Abrechnung",
+      "short_name": "Prognose",
+      "description": "Brutto und Netto der nächsten Abrechnung schätzen",
+      "url": "/arbeitszeit/#prognose",
+      "icons": [{ "src": "/arbeitszeit/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Abrechnung prüfen",
+      "short_name": "Prüfen",
+      "description": "Bereitschafts-Liste mit Abrechnung vergleichen",
+      "url": "/arbeitszeit/#abrechnung",
+      "icons": [{ "src": "/arbeitszeit/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
     }
   ]
 }

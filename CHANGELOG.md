@@ -7,6 +7,31 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.42.0] — 2026-07-10
+
+### Verändert — PWA-Politur (Feature C für v2.0)
+
+Die App fühlt sich jetzt spürbar mehr wie eine echte iPhone-App an, wenn man sie auf den Home-Screen legt:
+
+- **Manifest deutlich reicher**: `display_override` (mit Fallback), `categories` (productivity/finance), `id`, eigene Icon-Datei-Referenz (statt riesigem inline-Data-URL im HTML), separater maskable-Icon-Variant für iOS-Adaptive-Icons.
+- **App-Shortcuts** aus dem Home-Screen-Icon: langes Drücken zeigt Quick-Actions „Tageserfassung", „Nächste Abrechnung", „Abrechnung prüfen" — spart einen Tap.
+- **Meta-Tags** für alle relevanten iOS-Auflösungen (180 / 152 / 120 px apple-touch-icon), Safari-Pinned-Tab-Icon (`mask-icon`).
+- **Service Worker Cache-Version** auf `arbeitszeit-v1.42.0` hochgezogen, neue Assets im Preload.
+- **`icon-maskable.svg`** neu — Vollflächen-Hintergrund, Symbol in der iOS-Safe-Zone (80 %-Feld), verhindert Icon-Beschnitt.
+- **Theme-Color** und Background-Color auf iOS-System-Grays (`#F2F2F7`) angeglichen — Splash und Statuszeile passen zum Rest der App.
+
+### Verändert — Onboarding neu
+
+Das alte 8-Slide-Onboarding war noch aus der Tageserfassungs-Only-Zeit und viel zu lang. Jetzt sind es **drei fokussierte Slides**:
+
+1. **Willkommen mit „Setup Automagic"-Hero-Karte** — der Foto/PDF-Upload-Button steht direkt im ersten Slide. Nach erfolgreichem Import ist das Onboarding **automatisch komplett und die App bereit**. Ein Tap statt neun.
+2. **Deine drei Werkzeuge** — kurz visuell die Tools mit Icons und Beschreibungen.
+3. **Privat wie es sein soll** — Datenschutz-Message + Backup-Tipp.
+
+Weniger Text, mehr Wow. Passt zum „iPhone-easy"-Vibe.
+
+---
+
 ## [1.41.1] — 2026-07-10
 
 ### Rückgängig gemacht
