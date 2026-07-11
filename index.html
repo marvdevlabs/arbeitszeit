@@ -327,111 +327,6 @@
   .tool { display: block; }
   .tool.hidden { display: none !important; }
 
-  /* ===== Home-Dashboard (Live-Panel wenn Prognose vorhanden) ===== */
-  .home-dashboard {
-    margin: 20px 20px 0;
-    padding: 20px 20px 16px;
-    background: linear-gradient(160deg, rgba(236,0,22,0.06) 0%, rgba(236,0,22,0.02) 60%, transparent 100%);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    position: relative;
-  }
-  body[data-theme="dark"] .home-dashboard {
-    background: linear-gradient(160deg, rgba(236,0,22,0.14) 0%, rgba(236,0,22,0.05) 60%, transparent 100%);
-  }
-  .home-dashboard-head {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-    margin-bottom: 14px;
-  }
-  .home-dashboard-eyebrow {
-    font-size: 12px; font-weight: 600; color: var(--tint);
-    text-transform: uppercase; letter-spacing: 0.6px;
-  }
-  .home-dashboard-title {
-    font-size: 20px; font-weight: 700; color: var(--text-strong);
-    letter-spacing: -0.4px; margin-top: 2px;
-  }
-  .home-dashboard-dismiss {
-    background: transparent; border: none;
-    width: 28px; height: 28px; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-muted);
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-  .home-dashboard-dismiss:hover { background: var(--bg-button-soft); color: var(--text-secondary); }
-  .home-dashboard-dismiss svg { width: 14px; height: 14px; }
-  .home-dashboard-hero {
-    display: flex; flex-direction: column;
-    padding: 10px 0 14px;
-    border-bottom: 0.5px solid var(--border);
-    margin-bottom: 14px;
-  }
-  .home-dashboard-hero-label {
-    font-size: 13px; color: var(--text-secondary);
-    letter-spacing: -0.05px;
-  }
-  .home-dashboard-hero-value {
-    font-size: 38px; font-weight: 700; color: var(--text-strong);
-    letter-spacing: -1.2px;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.1;
-    margin-top: 2px;
-  }
-  .home-dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px 14px;
-    margin-bottom: 16px;
-  }
-  @media (max-width: 480px) {
-    .home-dashboard-grid { grid-template-columns: 1fr 1fr; }
-    .home-dashboard-grid > :nth-child(3) { grid-column: 1 / -1; }
-  }
-  .home-dashboard-cell {
-    display: flex; flex-direction: column; gap: 2px;
-    min-width: 0;
-  }
-  .home-dashboard-cell-label {
-    font-size: 11.5px; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.3px;
-    font-weight: 500;
-  }
-  .home-dashboard-cell-value {
-    font-size: 17px; font-weight: 600; color: var(--text-strong);
-    letter-spacing: -0.3px;
-    font-variant-numeric: tabular-nums;
-  }
-  .home-dashboard-cell-sub {
-    font-size: 12px; color: var(--text-secondary);
-    font-variant-numeric: tabular-nums;
-  }
-  .home-dashboard-cta {
-    display: inline-flex; align-items: center;
-    background: var(--tint); color: #fff; border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-size: 14px; font-weight: 600;
-    letter-spacing: -0.1px;
-    cursor: pointer; font-family: inherit;
-    transition: background 0.15s, transform 0.08s;
-  }
-  .home-dashboard-cta:hover { background: var(--tint-pressed); }
-  .home-dashboard-cta:active { transform: scale(0.97); }
-
-  /* Wenn Dashboard sichtbar: Titel + Sub kleiner darstellen */
-  .home-dashboard:not(.hidden) ~ #homeQuestion {
-    font-size: 15px !important;
-    color: var(--text-secondary) !important;
-    font-weight: 500 !important;
-    margin-top: 20px !important;
-    margin-bottom: 2px !important;
-  }
-  .home-dashboard:not(.hidden) ~ #homeQuestionSub {
-    font-size: 12px !important;
-    margin-bottom: 12px !important;
-  }
-
   .tool-home { padding: 24px 20px 20px; }
   .tool-home h2 {
     font-size: 20px; margin-bottom: 4px; color: var(--text-strong);
@@ -2414,44 +2309,8 @@
   <!-- ====== Home / Toolbox-Auswahl ====== -->
   <section class="tool hidden" id="tool-home">
     <div class="tool-home">
-      <!-- Live-Dashboard-Panel (nur sichtbar wenn Prognose vorhanden) -->
-      <div class="home-dashboard hidden" id="homeDashboard">
-        <div class="home-dashboard-head">
-          <div>
-            <div class="home-dashboard-eyebrow" id="homeDashboardEyebrow">Deine Prognose</div>
-            <div class="home-dashboard-title" id="homeDashboardTitle">Juni 2026</div>
-          </div>
-          <button type="button" class="home-dashboard-dismiss" onclick="dismissHomeDashboard()" title="Verstecken" aria-label="Verstecken">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="home-dashboard-hero">
-          <div class="home-dashboard-hero-label">Voraussichtliches Netto</div>
-          <div class="home-dashboard-hero-value" id="homeDashboardNetto">–</div>
-        </div>
-        <div class="home-dashboard-grid">
-          <div class="home-dashboard-cell">
-            <div class="home-dashboard-cell-label">Brutto gesamt</div>
-            <div class="home-dashboard-cell-value" id="homeDashboardBrutto">–</div>
-          </div>
-          <div class="home-dashboard-cell">
-            <div class="home-dashboard-cell-label">Zulagen brutto</div>
-            <div class="home-dashboard-cell-value" id="homeDashboardZulagen">–</div>
-          </div>
-          <div class="home-dashboard-cell">
-            <div class="home-dashboard-cell-label">Netto aus Bereitschaft</div>
-            <div class="home-dashboard-cell-value" id="homeDashboardBereitNetto">–</div>
-            <div class="home-dashboard-cell-sub" id="homeDashboardBereitQuote">–</div>
-          </div>
-        </div>
-        <button type="button" class="home-dashboard-cta" onclick="showTool('prognose')">
-          Details ansehen
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-left:4px;vertical-align:-3px;"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-
-      <h2 id="homeQuestion">Was möchtest du machen?</h2>
-      <div class="home-sub" id="homeQuestionSub">Wähle ein Werkzeug aus.</div>
+      <h2>Was möchtest du machen?</h2>
+      <div class="home-sub">Wähle ein Werkzeug aus.</div>
       <div class="tool-grid">
         <button type="button" class="tool-card" onclick="showTool('tageserfassung')">
           <div class="tool-card-head">
@@ -3104,7 +2963,7 @@
 <div id="print-area" aria-hidden="true"></div>
 
 <script>
-  const APP_VERSION = '1.42.0';
+  const APP_VERSION = '1.41.0';
   const FIX_ABZUG_MIN = 60;      // Morgen 30 + Nachmittag 30 (Standardfall)
   const SOLL_MIN = 468;          // 7h 48min
   const AE48_MIN = 480;          // 48 AE = 480 min = 8h
@@ -5070,9 +4929,6 @@
 
     // Lightweight Persistenz nur fuer Tool-Auswahl (keine PDFs/PII).
     try { localStorage.setItem(TOOL_KEY, name); } catch (e) {}
-
-    // Home-Dashboard live rendern sobald man auf Home landet
-    if (name === 'home') renderHomeDashboard();
 
     // Wenn der User aktiv auf Tageserfassung wechselt UND es eine pending
     // Restore-Anforderung gibt → erst jetzt zeigen (nicht auf Home).
@@ -7616,56 +7472,6 @@
     }
   }
 
-  /* ===== Home-Dashboard: letzte Prognose persistieren + anzeigen ===== */
-  const PROG_LAST_KEY = 'prog_last_result_v1';
-  const PROG_DASHBOARD_DISMISSED_KEY = 'prog_dashboard_dismissed_v1';
-
-  function saveProgLastResult(data) {
-    try { localStorage.setItem(PROG_LAST_KEY, JSON.stringify(data)); } catch (e) {}
-    // Dismiss-Merker aufheben — neue Prognose verdient wieder ihre Bühne
-    try { localStorage.removeItem(PROG_DASHBOARD_DISMISSED_KEY); } catch (e) {}
-    if (currentTool === 'home') renderHomeDashboard();
-  }
-  function loadProgLastResult() {
-    try {
-      const raw = localStorage.getItem(PROG_LAST_KEY);
-      if (!raw) return null;
-      const d = JSON.parse(raw);
-      if (!d || typeof d !== 'object') return null;
-      if (typeof d.brutto !== 'number' || d.brutto <= 0) return null;
-      return d;
-    } catch (e) { return null; }
-  }
-  function dismissHomeDashboard() {
-    try { localStorage.setItem(PROG_DASHBOARD_DISMISSED_KEY, '1'); } catch (e) {}
-    const el = document.getElementById('homeDashboard');
-    if (el) el.classList.add('hidden');
-  }
-  function isDashboardDismissed() {
-    try { return localStorage.getItem(PROG_DASHBOARD_DISMISSED_KEY) === '1'; }
-    catch (e) { return false; }
-  }
-  function renderHomeDashboard() {
-    const el = document.getElementById('homeDashboard');
-    if (!el) return;
-    const d = loadProgLastResult();
-    if (!d || isDashboardDismissed()) { el.classList.add('hidden'); return; }
-    // Titel
-    const title = d.mode === 'manual' ? 'Planspiel' :
-      (d.month && d.year ? monthLabel(d.month, d.year) : 'Letzte Prognose');
-    const eyebrow = d.mode === 'manual' ? 'Planspiel-Ergebnis' : 'Deine Prognose';
-    document.getElementById('homeDashboardEyebrow').textContent = eyebrow;
-    document.getElementById('homeDashboardTitle').textContent = title;
-    document.getElementById('homeDashboardNetto').textContent   = abrFmtEUR(d.nettoMit);
-    document.getElementById('homeDashboardBrutto').textContent  = abrFmtEUR(d.brutto);
-    document.getElementById('homeDashboardZulagen').textContent = abrFmtEUR(d.sumZulagen);
-    document.getElementById('homeDashboardBereitNetto').textContent = '+ ' + abrFmtEUR(d.deltaNetto);
-    document.getElementById('homeDashboardBereitQuote').textContent =
-      d.sumZulagen > 0 ? d.quote.toFixed(1).replace('.', ',') + ' % Quote' : '';
-    el.classList.remove('hidden');
-  }
-  window.dismissHomeDashboard = dismissHomeDashboard;
-
   /* ===== Tool 3: Naechste Abrechnung (Prognose) =====
    *
    * Uploads:
@@ -8007,9 +7813,6 @@
     progState.ber = null;
     progState.pvn = null;
     progState.working = false;
-    // Home-Dashboard leeren
-    try { localStorage.removeItem(PROG_LAST_KEY); } catch (e) {}
-    try { localStorage.removeItem(PROG_DASHBOARD_DISMISSED_KEY); } catch (e) {}
     ['ber', 'pvn'].forEach(k => {
       const slot = progSlotEl(k);
       const stat = progStatusEl(k);
@@ -8171,27 +7974,6 @@
 
     const gg = (abrPersonal && abrPersonal.grundgehalt > 0) ? abrPersonal.grundgehalt : 0;
     const brutto = sumZulagen + gg;
-
-    // Ergebnis für Home-Dashboard persistieren (nur wenn wenigstens Grund-
-    // gehalt gesetzt ist → dann kann Netto berechnet werden).
-    if (gg > 0 && abrPersonalGateOk() && sumZulagen >= 0) {
-      const nMit  = abrCalcNetto(brutto, abrPersonal);
-      const nOhne = abrCalcNetto(gg,     abrPersonal);
-      const delta = abrRound2(nMit.netto - nOhne.netto);
-      const quote = sumZulagen > 0 ? (delta / sumZulagen) * 100 : 0;
-      saveProgLastResult({
-        month: progState.mode === 'manual' ? null : (mo && mo.m),
-        year:  progState.mode === 'manual' ? null : (mo && mo.y),
-        mode:  progState.mode,
-        sumZulagen: abrRound2(sumZulagen),
-        brutto: abrRound2(brutto),
-        nettoMit:  nMit.netto,
-        nettoOhne: nOhne.netto,
-        deltaNetto: delta,
-        quote: quote,
-        savedAt: Date.now(),
-      });
-    }
 
     // HTML rendern
     let html = '';
