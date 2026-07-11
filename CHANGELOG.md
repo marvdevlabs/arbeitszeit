@@ -7,6 +7,23 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.42.0] — 2026-07-10
+
+### Neu — Dashboard-Home (Feature A für v2.0)
+
+Home ist keine reine Tool-Auswahl mehr, sondern zeigt **die letzte Prognose direkt an**. Sobald du in Tool 3 einmal gerechnet hast (PDF oder Planspiel), landet das Ergebnis oben auf Home als Live-Panel im Apple-Wallet-Look:
+
+- **Große Netto-Zahl** („Voraussichtliches Netto") ganz oben — 38 px, tabellarisch, sofort lesbar
+- **Drei kleine Kacheln** darunter: Brutto gesamt · Zulagen brutto · Netto aus Bereitschaft (mit Quote)
+- **Details ansehen** springt zurück in Tool 3
+- **Kleines X** oben rechts versteckt das Panel — kommt aber automatisch wieder, sobald du eine neue Prognose rechnest
+
+Wenn keine Prognose vorhanden ist (Erst-Nutzer oder nach „Zurücksetzen" in Tool 3), sieht Home aus wie bisher — nur die drei Tool-Kacheln.
+
+State ist LocalStorage-persistent (`prog_last_result_v1`). Kein Server, kein Upload — nur dein Browser weiß's.
+
+---
+
 ## [1.41.0] — 2026-07-10
 
 ### Neu — Setup Automagic (Feature D für v2.0)
